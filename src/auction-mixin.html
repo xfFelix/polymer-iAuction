@@ -1,0 +1,207 @@
+
+
+<script>
+	AuctionMixin = (superClass) => class extends superClass {
+	    static get properties() {
+	      	return {
+		        baseUrl:{
+		        	type : String,
+		        	value : baseUrl
+		        },
+		        adminHeader:{
+		        	type : Object,
+		        	value : adminHeader
+		        },
+		        sellerHeader:{
+		        	type : Object,
+		        	value : sellerHeader
+		        },
+		        token: {
+		        	type : Object,
+		        	value : token
+		        }
+	        };
+	    }
+	    static get observers() {
+
+	    }
+		xAjax (url, st, body) {
+			var promise = new Promise((resolve, reject)=> {
+			var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+			xhr.open("post", this.setUrl(url), true);
+			xhr.responseType = 'json';
+			xhr.setRequestHeader('Accept', 'application/json');
+			xhr.setRequestHeader('st',st);
+			xhr.onreadystatechange = handler
+			xhr.send(body); //开始上传，发送form数据
+			function handler() {
+				if (this.readyState !== 4) {
+				return
+				}
+				if (this.status === 200) {
+				resolve(this.response);
+				}else {
+				reject(new Error(this.statusText))
+				}
+			}
+			})
+			return promise 
+		}
+	    /**
+	     * http url拼接
+	     * @param {[type]} url [description]
+	     */
+	    setUrl(url){
+	    	return this.baseUrl + url;
+	    }
+	    // 获取对象url
+		getObjectURL(file) {
+	        var url = null;
+	        if (window.createObjectURL != undefined) {
+	            url = window.createObjectURL(file)
+	        } else if (window.URL != undefined) {
+	            url = window.URL.createObjectURL(file)
+	        } else if (window.webkitURL != undefined) {
+	            url = window.webkitURL.createObjectURL(file)
+	        }
+	        return url
+	    }
+	    // base64 png
+	    base64Png(str){
+	      return "data:image/png;base64," + str;
+	    }
+	    /**
+	     * 獲取路徑上的參數
+	     * @return {[type]} [description]
+	     */
+	    getViewParam () {
+		    var args = {}
+		    var query = location.search.substring(1)
+		    var pairs = query.split('&')
+		    for (var i = 0; i < pairs.length; i += 1) {
+		      var pos = pairs[i].indexOf('=')
+		      if (pos === -1) {
+		        continue
+		      }
+		      var argname = pairs[i].substring(0, pos)
+		      var value = pairs[i].substring(pos + 1)
+		      args[argname] = unescape(value)
+		    }
+		    return args
+		  }
+		  // 判断是否App环境
+		checkApp () {
+			let userAgent = navigator.userAgent.toString(); //获取userAgent
+			if (userAgent.indexOf("android_linkedtech") + 1 >0) {
+				return 'android'
+			} else if (userAgent.indexOf("iOS-iAuction") + 1 >0) {
+				return 'ios'
+			} else if (userAgent.indexOf("windowswechat") + 1 >0) {
+				return 'winwechat'
+			}
+			return false
+		}
+	    /**
+	     * 保存 header
+	     * @param  {[type]} name  [description]
+	     * @param  {[type]} token [description]
+	     * @return {[type]}       [description]
+	     */
+	    updateAdminHeader(name , token){
+	    	this.set('adminHeader.X-ADMIN-USERNAME',name);
+	    	this.set('adminHeader.X-CustomToken',token);
+	    }
+	    // 時間格式
+	    setTimeFormat(unixTime){
+	    	if(!unixTime){
+	    		return '';
+	    	}else{
+	    		var inputdate = new Date(unixTime);
+	    		var year = inputdate.getFullYear();
+	    		var month = inputdate.getMonth() + 1;
+	    		var day = inputdate.getDate();
+	    		var hour = inputdate.getHours();
+	    		var min = inputdate.getMinutes();
+	    		var seconds = inputdate.getSeconds();
+	    		return year + "-" + month + "-" + day + " " + this.addZero(hour) + ":" + this.addZero(min) + ":" + this.addZero(seconds);
+	    	}
+	    }
+	    formatDateTime (inputTime) {
+	        if (typeof inputTime === 'string') {
+	        	inputTime = Number(inputTime)
+	        }    
+		    var date = new Date(inputTime);  
+		    var y = date.getFullYear();    
+		    var m = date.getMonth() + 1;    
+		    m = m < 10 ? ('0' + m) : m;    
+		    var d = date.getDate();    
+		    d = d < 10 ? ('0' + d) : d;    
+		    var h = date.getHours();  
+		    h = h < 10 ? ('0' + h) : h;  
+		    var minute = date.getMinutes();  
+		    var second = date.getSeconds();  
+		    minute = minute < 10 ? ('0' + minute) : minute;    
+		    second = second < 10 ? ('0' + second) : second;   
+		    // return y + '-' + m + '-' + d+' '+h+':'+minute+':'+second;  
+		    return y + '-' + m + '-' + d;  
+		}
+		formatDate (inputTime) {
+	        if (typeof inputTime === 'string') {
+	        	inputTime = Number(inputTime)
+	        }    
+		    var date = new Date(inputTime);  
+		    var y = date.getFullYear();    
+		    var m = date.getMonth() + 1;    
+		    m = m < 10 ? ('0' + m) : m;    
+		    var d = date.getDate();    
+		    d = d < 10 ? ('0' + d) : d;    
+		    var h = date.getHours();  
+		    h = h < 10 ? ('0' + h) : h;  
+		    var minute = date.getMinutes();  
+		    var second = date.getSeconds();  
+		    minute = minute < 10 ? ('0' + minute) : minute;    
+		    second = second < 10 ? ('0' + second) : second;   
+		    return y + '-' + m + '-' + d+' '+h+':'+minute+':'+second;  
+		    // return y + '-' + m + '-' + d;  
+		}
+		abs (val){
+			if (!val) {
+				return 
+			}
+			//金额转换 分->元 保留2位小数 并每隔3位用逗号分开 1,234.56
+			var str = (val).toFixed(2) + '';
+			var intSum = str.substring(0,str.indexOf(".")).replace( /\B(?=(?:\d{3})+$)/g, ',' );//取到整数部分
+			var dot = str.substring(str.length,str.indexOf("."))//取到小数部分搜索
+			var ret = intSum;
+			return ret;
+		}
+	    /**
+	     * 验证手机号码
+	     * @param  {[type]}  pone [description]
+	     * @return {Boolean}      [description]
+	     */
+	    isPoneAvailable (pone) {  
+		  var myreg = /^(4\d{7})$|^(5[1-7|9]\d{6})$|^(6\d{7})$|^(7[0-3]\d{6})$|^(8[1-7]\d{6})$|^(9[0-8][1-9]\d{5})$/;  
+		  if (!myreg.test(pone)) {  
+		    return false;  
+		  } else {  
+		    return true;  
+		  }  
+		}
+		/**
+		 * 邮箱验证
+		 * @param  {[type]} obj [description]
+		 * @return {[type]}     [description]
+		 */
+		checkEmail(obj){
+		    var reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
+		    if(obj === ""){ //输入不能为空
+		        return false;
+		    }else if(!reg.test(obj)){ //正则验证不通过，格式不对
+		        return false;
+		    }else{
+		        return true;
+		    }
+		}
+	}	
+</script>

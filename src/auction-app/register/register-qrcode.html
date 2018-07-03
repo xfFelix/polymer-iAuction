@@ -1,0 +1,183 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="register-qrcode">
+  <template>
+    <style include = "shared-styles">
+      #button{
+        bottom: 20px;
+      }
+      .title {
+        text-align: center;
+      }
+      .content{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      .content-body{
+        width: 90%;
+        display: flex;
+        line-height: 25px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 15px;
+        background-color: #f5f5f5;
+        margin-top: 20px;
+      }
+      .argument{
+        display: flex;
+        justify-content: space-between;
+        width: 80%;
+        align-items: center;
+      }
+      .last{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-top: 30px;
+      }
+      .last .last-phone{
+        border: 1px solid rgba(255, 153, 102, 1);
+        background-color: #f7a700;
+        width: 90%;
+        height: 50px;
+        color: #FFFFFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        border-radius: 25px;
+      }
+    </style>
+   
+    <div>
+      <register-header title="預約資料" is-back="{{isBack}}"></register-header>
+      <div id="container">
+        <div class="content">
+          <div class="content-body">
+            <h2 class="title">登記資料</h2>
+            <div class="argument"><span>姓名：</span><span>{{data.name}}</span></div>
+            <div class="argument"><span>手提：</span><span>{{data.mobile}}</span></div>
+            <div class="argument"><span>預約時間：</span><span>{{data.reserveDate}}</span></div>
+            <!-- <div class="argument"><span>登記車廠：</span><span>{{data.vehicleBrand}}</span></div>
+            <div class="argument"><span>登記型號：</span><span>{{data.vehicleSeries}}</span></div> -->
+            <div class="argument"><span>預付：</span><span>{{paymentText}}</span></div>
+
+            <img src="{{base64Png(data.qrCode)}}" alt="" class="qrcode" style="width: 50%;">
+            <div class="body-footer" style="font-size: 13px;">到車場后請將上面二維碼展示與工作人員</div>
+          </div>
+          <h2>注意事項</h2>
+          <div class="content-body" style="margin-top: 0">
+            <div class="body-text" style="padding-top: 10px; padding-left: 10px; font-size:12px; color: red;">
+              車主需要準備以下文件為車輛拍賣：<br>
+              – 車輛登記文件正本<br>
+              – 買賣雙方的身份證明文件（香港身份證或護照）<br>
+              – 汽車保險證明（臨時保單）<br>
+              – 所需費用
+            </div>
+          </div>
+        </div>
+      
+
+      </div>
+    <!-- <div class="last">
+          <div class="last-phone" on-click="goBack">
+            返回
+          </div>
+        </div> -->
+    </div>
+<!-- 獲取用戶信息 -->
+      <iron-ajax
+        id="getOwnerFile"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/getOwnerFile')}}"
+        Content-Type="application/json"
+        on-response="_responOwner">
+      </iron-ajax>
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterQrcode extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-qrcode'; }
+      static get properties() {
+        return {
+          isBack: {
+            type: Boolean,
+            value: true
+          },
+          // 登记信息
+          register: {
+            type: Object
+          },
+          // 当前路由
+          subRoute:{
+            type : String,
+            observer: '_checkPage'
+          },
+          vehicleId: {
+            type: String,
+            value: JSON.parse(localStorage.vehicleId) || ''
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      ready() {
+        super.ready();
+      }
+      _responOwner(e) {
+        let data = e.detail.response
+        this.data = data
+        if (data.paymentType == '0') {
+          this.paymentText = '现场支付($699)'
+        } else if (data.paymentType == '1') {
+          this.paymentText = '支付宝($499)'
+        } else if (data.paymentType == '2') {
+          this.paymentText = 'paypal($599)'
+        }
+      }
+      goBack(e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-not-start"},bubbles: true, composed: true}));
+      }
+      /**
+       * 页面验证和数据获取
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      async _checkPage (e) {
+        if (e === 'register-qrcode') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.$.getOwnerFile.body = {
+              generateQrCode: true,
+              vehicleId: JSON.parse(localStorage.vehicleId)
+            }
+            this.$.getOwnerFile.generateRequest()
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+
+    }
+
+    window.customElements.define(RegisterQrcode.is, RegisterQrcode);
+  </script>
+</dom-module>

@@ -1,0 +1,51 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="register-home">
+  <template>
+    <style include = "shared-styles">
+      
+    </style>
+   
+    <div>
+      <div id="container">
+        <img class="header_img" src="../../../images/edm01.jpg"/>
+        <img class="header_img" src="../../../images/edm02.jpg"/>
+        <a href="./register-mine">
+          <div id="button3">立即登記</div>
+        </a>
+        <img class="header_img" src="../../../images/edm03.jpg"/>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterHome extends Polymer.Element {
+      static get is() { return 'register-home'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            // observer: '_checkPage'
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      ready() {
+        super.ready();
+      }
+
+    }
+
+    window.customElements.define(RegisterHome.is, RegisterHome);
+  </script>
+</dom-module>

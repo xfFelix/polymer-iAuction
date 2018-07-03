@@ -1,0 +1,261 @@
+<dom-module id="comment-styles">
+<template>
+    <style>
+    a{
+    text-decoration: none;
+    }
+    #header{
+    width:100%;
+    max-width: 480px;
+    height:auto;
+    margin:0 auto;
+    padding:0;
+    }
+
+    .header_img{
+    width:100%;
+    box-sizing: border-box;
+    }
+    .body-attr{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 10px;
+        font-size: 16px;  
+        box-sizing: border-box;
+    }
+    .body-attr:nth-child(even){
+        background-color: #f2f2f2;
+    }
+    .attr-name{
+        font-family: PingFangTC-Light;
+        font-size: 14px;
+        color: #4A4A4A;
+        letter-spacing: 0;
+    }
+    .attr-value{
+        font-family: PingFangTC-Medium;
+        font-size: 14px;
+        color: #4A4A4A;
+        letter-spacing: 0;
+        font-weight: 600;
+    }
+    #button{
+        position: static;
+        width: 90%;
+    }
+    .title-btn{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+    .confirm{
+        border: 1px #F5A623 solid;
+        margin-right: 10px;
+        box-sizing: border-box;
+        width: 78px;
+        height: 32px;
+        background: #F5A623;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: PingFangTC-Medium;
+        font-size: 16px;
+        color: #FFFFFF;
+        letter-spacing: 0;
+    }
+    hr{
+        margin: 0 10px;
+    }
+    footer{
+    font-family: microsoft yahei;
+    text-align: center;
+    font-size:12px;
+    width:100%;
+    /*max-width: 960px;*/
+    height:auto;
+    margin:10px auto;
+    }
+
+    #container{
+    font-family:microsoft yahei;
+    font-size:14px;
+    line-height:20px;
+    max-width: 500px;
+    font-weight:300;
+    width:100%;
+    height:auto;
+    margin:0 auto;
+    }
+
+    h3{
+    color:#333;
+    font-size:22px;
+    text-align:center;
+    margin:10px 0 20px 0;
+    }
+
+    h4{
+    color:#333;
+    font-size:18px;
+    line-height: 24px;
+    text-align:left;
+    margin:10px 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+    }
+
+    p{
+    font-size:13px;
+    text-align:left;
+    }
+
+    .info{
+    text-align: center;
+    line-height:14px;
+    color:#999;
+    }
+
+    .reminder{
+    text-align: center;
+    line-height:14px;
+    color:red;
+    }
+
+    #step{
+    width:200px;
+    text-align: center;
+    margin:0 auto;
+    width:200px;
+    height:40px;
+    background-image:url("/images/ball_line.jpg");
+    }
+
+    .ball{
+    background-color: #fff;
+    border:1px solid #F5A623;
+    border-radius: 30px;
+    color:#F5A623;
+    width:20px;
+    margin:10px;
+    display:inline-block;
+    }
+    .ball_active{
+    background-color:#F5A623;
+    border:1px solid #F5A623;
+    border-radius: 30px;
+    color:#fff;
+    width:20px;
+    margin:10px;
+    display:inline-block;
+    }
+    .input{
+    width:85%;
+    }
+    .input2{
+    width:37.5%;
+    }
+    .input3{
+    margin:0 9%;
+    }
+    .input4{
+    float:left;
+    height:36px;
+    line-height: 36px;
+    margin-right:10px;
+    }
+    .walkin{
+    float:left;
+    font-size:20px;
+    margin-top:10px;
+    }
+    .section{
+    display:flex;
+    justify-content:space-around;
+    flex-wrap: nowrap;
+    margin:20px 0;
+    }
+    .section2{
+    display:flex;
+    justify-content:flex-start;
+    flex-wrap: nowrap;
+    margin:20px 0;
+    }
+
+    .box{
+    background-color: #f5f5f5;
+    margin:20px 0;
+    padding:10px;
+    }
+
+    .list{
+    line-height: 20px;
+    padding:15px 5px;
+    border-bottom:1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    }
+    .section span{
+    color:red;
+    }
+    .list_left{
+    text-align: left;
+
+    }
+    .list_right{
+    text-align: right;
+
+    }
+    .price{
+    font-size:26px;
+    color:red;
+
+    }
+    .price2{
+    font-size:26px;
+    }
+
+    .qrcode{
+    width:33%;
+    margin:20px 33% 10px 33%;
+    }
+    #button{
+        bottom:0;
+        left:33%;
+        text-align:center;
+        line-height: 50px;
+        color:#fff;
+        height:50px;
+        background-color:#F5A623;
+        margin:10px auto;
+        border-radius:4px;
+    }
+
+    #button2{
+        text-align:center;
+        line-height: 20px;
+        color:#F5A623;;
+        height:20px;
+        border:1px solid #F5A623;
+        background-color:#fff;
+        border-radius:4px;
+    }
+
+    #button3{
+        left:33%;
+        width:33%;
+        text-align:center;
+        line-height: 50px;
+        color:#fff;
+        height:50px;
+        background-color:#F5A623;
+        margin:10px auto;
+        border-radius:4px;
+    }
+
+    </style>
+</template>
+</dom-module>
+      

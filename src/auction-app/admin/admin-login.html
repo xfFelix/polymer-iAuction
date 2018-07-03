@@ -1,0 +1,162 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="admin-login">
+  <template>
+    <style>
+      :host{
+        width: 100vw;
+        height: calc(100vh - 26px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+      }
+      .container{
+        padding: 10px;
+        border: 1px solid #ddd;
+        min-width: 25rem;
+        box-sizing: border-box;
+      }
+      .logo{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .logo p {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 10px;
+      }
+      .login{
+        cursor: pointer;
+        text-align:center;
+        line-height: 50px;
+        color:#fff;
+        height:50px;
+        background-color:var(--button-background-color);
+        margin:10px auto;
+        border-radius:4px;
+        font-size: 18px;
+      }
+      .info{
+        display: flex;
+        flex-direction: column;
+      }
+      .fail{
+        color: red;
+      }
+    </style>
+    <section>
+      <div class="container">
+        <div class="logo">
+          <img src="../../../images/logo-red.png" alt="">
+          <p>拍賣車輛管理系統</p>
+        </div>
+        <div class="info">
+          <vaadin-text-field label="賬 號" value="{{account}}" required></vaadin-text-field>
+          <vaadin-password-field label="密 碼" value="{{password}}" required on-keypress="keypress"></vaadin-password-field>
+          <vaadin-checkbox checked="{{isRecord}}">記住賬號和密碼</vaadin-checkbox>
+        </div>
+        <div class="fail" hidden="{{!loginFail}}">
+          帳號名或密碼錯誤
+        </div>
+        <div class="login" on-click="_login" on-keypress="keypress">
+          登入
+        </div>
+      </div>
+    </section>
+    <iron-ajax
+      id = "loginAjax"
+      url="{{setUrl('j_spring_security')}}"
+      method="POST"
+      Content-Type="application/x-www-form-urlencoded"
+      on-response="_responLogin"></iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminLogin extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-login'; }
+      static get properties() {
+        return {
+          path : {
+            type : String,
+            // observer : "_checkPath"
+          },
+          isRecord : {
+            type : Boolean,
+          },
+          loginFail : {
+            type :Boolean,
+            value : false
+          },
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      ready() {
+        super.ready();
+        if (localStorage.loginMsg) {
+          let loginMsg = JSON.parse(localStorage.loginMsg)
+          this.account = loginMsg.account
+          this.password = loginMsg.password
+          this.isRecord = true
+        } else {
+          this.account = ''
+          this.password = ''
+          this.isRecord = false
+        }
+      }
+      // 登陸響應
+      _responLogin(e){
+        var respon = e.detail.response
+        if(respon.status == "Success"){
+          this.loginFail = false;
+          this.adminHeader['X-CustomToken'] = respon.value;
+          this.adminHeader['X-ADMIN-USERNAME'] = this.account;
+          localStorage.setItem('adminHeader',JSON.stringify(this.adminHeader));
+          // 跳轉到主頁
+          this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/admin/admin-home"},bubbles: true, composed: true}));
+        }else{
+          this.loginFail = true;
+          this.account = '';
+          this.password = '';
+        }
+      }
+      _login(){
+        if(this.account && this.password){
+          if (this.isRecord) {
+            localStorage.loginMsg = JSON.stringify({
+              account: this.account,
+              password: this.password
+            })
+          } else {
+            localStorage.removeItem('loginMsg')
+          }
+          this.$.loginAjax.body = {
+            j_admin_username : this.account,
+            j_admin_password : this.password
+          };
+          this.$.loginAjax.generateRequest();
+        }
+      }
+      // enter 登陸
+      keypress(event){
+        var x = event.which || event.keyCode;
+        if(x === 13){
+          this._login();
+        }
+      }
+
+    }
+
+    window.customElements.define(AdminLogin.is, AdminLogin);
+  </script>
+</dom-module>

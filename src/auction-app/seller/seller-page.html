@@ -1,0 +1,69 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<!-- 导入页面 -->
+<link rel="import" href="seller-home.html">
+<link rel="import" href="seller-not-start.html">
+<link rel="import" href="seller-starting.html">
+<link rel="import" href="seller-end.html">
+<link rel="import" href="seller-answer.html">
+<link rel="import" href="seller-call-buyer.html">
+<link rel="import" href="seller-car-detail.html">
+<link rel="import" href="seller-share.html">
+<link rel="import" href="seller-pay.html">
+
+<dom-module id="seller-page">
+  <template>
+    <style include = "shared-styles">
+      
+    </style>
+    <iron-pages selected="{{subPage}}" attr-for-selected = "page">
+      <seller-home page="seller-home"></seller-home>
+      <seller-not-start page="seller-not-start" route$="{{subRoute}}"></seller-not-start>
+      <seller-starting page="seller-starting" route$="{{subRoute}}"></seller-starting>
+      <seller-end page="seller-end" route$="{{subRoute}}"></seller-end>
+      <seller-answer page="seller-answer" route$="{{subRoute}}"></seller-answer>
+      <seller-call-buyer page="seller-call-buyer" route$="{{subRoute}}"></seller-call-buyer>
+      <seller-car-detail page="seller-car-detail" route$="{{subRoute}}"></seller-car-detail>
+      <seller-share page="seller-share" route$="{{subRoute}}"></seller-share>
+      <seller-pay page="seller-pay" route$="{{subRoute}}"></seller-pay>
+    </iron-pages>
+    
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerPage extends Polymer.Element {
+      static get is() { return 'seller-page'; }
+      static get properties() {
+        return {
+          view:{
+            type : String
+          },
+          subRoute:{
+            type : String,
+            // observer : "_checkPage"
+          }
+        };
+      }
+      static get observers(){
+        return [
+          '_checkPage(subRoute,view)'
+        ]
+      }
+      _checkPage(page, view){
+        // 判断是否是selller页面
+        if(view == 'seller'){
+          this.subPage = (page) ? page : 'seller-home';
+        }
+      }
+
+    }
+
+    window.customElements.define(SellerPage.is, SellerPage);
+  </script>
+</dom-module>

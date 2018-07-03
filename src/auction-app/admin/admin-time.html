@@ -1,0 +1,115 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="admin-time">
+  <template>
+    <style include = "shared-styles">
+      .addDateTime{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .dateTimeList{
+        margin-top: 50px;
+      }
+    </style>
+   
+    <div style="margin-left: 20px;margin-right: 20px;">
+      <h2>預約時間設置</h2>
+      <div class="addDateTime">
+        <label>請選擇預約時間：</label>
+        <div style="margin-right: 20px;">
+          <paper-button raised class="confirm" on-click="_saveChange">保存</paper-button>
+          <paper-button raised class="back" on-click="goBack">返回</paper-button>
+        </div>
+      </div>
+      <div class="dateTimeList" style="display: flex;justify-content: space-between;align-items: center;">
+        <dom-repeat items="{{dateList}}">
+            <template>
+              <date-picker date="{{item.auctionStartDate}}" default="{{item.auctionStartDate}}"></date-picker>
+            </template>
+          </dom-repeat>
+      </div>
+    </div>
+    <!-- 预约时间列表 -->
+      <iron-ajax
+        id="getDateList"
+        method="GET"
+        headers = "{{adminHeader}}"
+        url = "{{setUrl('admin/getReserveDate')}}"
+        Content-Type="application/json"
+        on-response="_responDate">
+      </iron-ajax>
+    <!-- 修改=>提交 时间列表 -->
+      <iron-ajax
+        id="updateReserveDate"
+        method="POST"
+        headers = "{{adminHeader}}"
+        body="{}"
+        url = "{{setUrl('admin/updateReserveDate')}}"
+        Content-Type="application/json"
+        on-response="_responUpdate">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminTime extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-time'; }
+      static get properties() {
+        return {
+          path : {
+            type : String,
+            observer : "_checkPath"
+          },
+          dateList: {
+            type: Array
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      // 檢查頁面
+      _checkPath (path){
+        if(path == "admin-time"){
+          // 删除车辆详情
+          this.$.getDateList.generateRequest();
+        }
+      }
+      /**
+       * 获取日期列表-回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responDate(e) {
+        this.dateList = e.detail.response
+      }
+      _saveChange(e) {
+        for (let date of this.dateList) {
+          date.auctionStartDate = date.auctionStartDate.replace(/-/g, '/');
+          date.reverseDate = new Date(date.auctionStartDate).getTime();
+          date.auctionStartDate = new Date(date.auctionStartDate).getTime();
+        }
+        this.$.updateReserveDate.body = this.dateList
+        this.$.updateReserveDate.generateRequest();
+      }
+      goBack (e) {
+        window.history.back()
+      }
+      _responUpdate(e) {
+        let data = e.detail.response;
+        if (data.success) {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"保存成功"},bubbles: true, composed: true}));
+          this.$.getDateList.generateRequest();
+        }
+      }
+    }
+
+    window.customElements.define(AdminTime.is, AdminTime);
+  </script>
+</dom-module>

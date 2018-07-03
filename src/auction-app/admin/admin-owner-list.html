@@ -1,0 +1,128 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="admin-owner-list">
+  <template>
+    <style include = "shared-styles">
+      .header{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .person{
+        width: 100%;
+        margin-top: 20px;
+        border-bottom: 1px solid #797979;
+        padding-bottom: 10px;
+      }
+      .person div{
+        margin-left: 20px;
+      }
+      .person .time{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .person .time span{
+        margin-right: 20px;
+        color: blue;
+        cursor: pointer;
+      }
+      .person-detail{
+        cursor: pointer;
+      }
+    </style>
+   
+    <div>
+      <div class="header">
+        <h2>車主列表（{{data.totalVehicle}}）</h2>
+        <div class="search">
+          <vaadin-text-field label="搜索車主" type="search"></vaadin-text-field>
+          <vaadin-combo-box label="排序" items="{{sortItems}}">
+          </vaadin-combo-box>
+        </div>
+      </div>
+      <div class="person-list">
+        <template is="dom-repeat" items="{{ownerViewList}}">
+          <div class="person">
+            <div class="name">{{item.name}}</div>
+            <div class="mobile">{{item.mobile}}</div>
+            <div class="time">2018-04-08  13:35 <div><span on-click="goDetail">查看詳情</span><span on-click="_delete">刪除</span></div></div>
+          </div>
+        </template>
+        
+      </div>
+    </div>
+    <!-- 獲取列表 -->
+    <iron-ajax
+      id="getList"
+      url="{{setUrl('admin/getOwnerList')}}"
+      body="{}"
+      method="POST"
+      headers = "{{adminHeader}}"
+      Content-Type="application/json"
+      on-response="_responList"></iron-ajax>
+    <!-- 删除数据 -->
+    <iron-ajax
+      id="deleteVehicle"
+      url="{{setUrl('admin/deleteVehicle')}}"
+      body="{}"
+      method="POST"
+      headers = "{{adminHeader}}"
+      Content-Type="application/json"></iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminOwnerList extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-owner-list'; }
+      static get properties() {
+        return {
+          path : {
+            type : String,
+            observer : "_checkPath"
+          },
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      // 檢查頁面
+      _checkPath (path){
+        if(path == "admin-owner-list"){
+          this.$.getList.generateRequest();
+        }
+      }
+      goDetail (e) {
+        let mobile = e.model.item.mobile
+        sessionStorage.mobile = JSON.stringify(mobile)
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:'/admin/admin-owner-detail'},bubbles: true, composed: true}));
+      }
+      _responList(e) {
+        let data = e.detail.response
+        this.data = data
+        if (data.success) {
+          this.ownerViewList = data.ownerViewList
+        }
+      }
+      _delete (e) {
+        this.$.deleteVehicle.body = {
+          uid : this.ownerViewList.uid
+        }
+        this.$.deleteVehicle.generateRequest().completes.then(res => {
+          let result = res.response
+          if (result.success) {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:'删除成功'},bubbles: true, composed: true}));
+            this.$.getList.generateRequest();
+          }
+        })
+      }
+    }
+
+    window.customElements.define(AdminOwnerList.is, AdminOwnerList);
+  </script>
+</dom-module>

@@ -1,0 +1,7 @@
+{
+  "name": "auction",
+  "short_name": "auction",
+  "description": "seller owner app",
+  "start_url": "/",
+  "display": "standalone"
+}

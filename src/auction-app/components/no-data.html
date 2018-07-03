@@ -1,0 +1,47 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="no-data">
+  <template>
+    <style include="comment-styles">
+      .no-data{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 100px;
+        flex-direction: column;
+      }
+      .text{
+        font-size: 18px;
+        margin-top: 10px;
+        color: #797979;
+        font-family: cursive;
+      }
+    </style>
+    <div class="no-data">
+        <img src="/images/car.png" alt="">
+        <div class="text">暫無數據</div>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class NoData extends Polymer.Element {
+      static get is() { return 'no-data'; }
+      static get properties() {
+        return {
+            
+        };
+      }
+      static get observers(){
+        return [
+        ]
+      }
+      
+    }
+
+    window.customElements.define(NoData.is, NoData);
+  </script>
+</dom-module>

@@ -1,0 +1,277 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+
+<dom-module id="register-photo">
+  <template>
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.3.6/cropper.css" rel="stylesheet">
+    <style include="comment-styles">
+      .slider_car{
+        align-items: center;
+      }
+      #button {
+          /* position: fixed; */
+          bottom: 40px;
+          left: 5%;
+      }
+      .photo-list{
+          overflow-x: scroll;
+          white-space: nowrap;
+      }
+      .upload{
+          width: 90px;
+          height: 50px;
+          margin-top: 20px;
+          margin-left: 9px;
+          box-sizing: border-box;
+      }
+      .photo{
+        left: 5%;
+        text-align: center;
+        line-height: 50px;
+        color: #fff;
+        height: 50px;
+        background-color: #F5A623;
+        margin: 10px auto;
+        border-radius: 4px;
+        /* position: fixed; */
+        margin-top: 100px;
+        bottom: 100px;
+        left: 5%;
+        width: 90%;
+      }
+      l2t-paper-slider{
+          min-height: 300px;
+          --paper-slide-height:300px;
+          --paper-slide-dot:#aba8a8;
+          --paper-slide-dot-selected:#fff;
+      }
+      paper-slide img{
+          width: 100%;
+          height:250px;
+      }
+      .dialogs{
+        outline: none;
+        position: fixed;
+        /* top: 187.203px; */
+        /* left: 36px; */
+        box-sizing: border-box;
+        max-height: 592px;
+        z-index: 103;
+        width: 95%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        height: auto;
+        max-width: none !important;
+        margin: 0;
+      }
+    </style>
+    <register-header title="修改資料" is-back="{{isBack}}"></register-header>
+    <div>
+        <div id="container">
+            <div class="swipe-list">
+                <div class="swipe">
+                    <!-- <img src="../../../images/u556.jpg" alt="" class="swipe-pic"> -->
+                    <l2t-paper-slider slide-duration="2" total-slides="[[imgUrlList.length]]">
+                        <template is="dom-repeat" items="{{imgUrlList}}">
+                            <paper-slide>
+                                <img class="slider_car" src="{{item}}">
+                            </paper-slide>
+                        </template>
+                    </l2t-paper-slider>
+                </div>
+            </div>
+            <div class="photo-list">
+                <template is="dom-repeat" items="{{photos}}">
+                    <img src="{{item}}" class="upload">
+                </template>
+            </div>
+            <div class="photo" on-click="setUploadPic">相冊</div>
+
+            <div id="button" on-click="goNext">確認修改</div>
+
+            <!-- <template is="dom-if" if="{{!isNext}}">
+                <div id="button" style="background-color: #797979;">確認修改</div>
+            </template> -->
+        </div>
+        <input hidden="true" enctype="multipart" type="file" id="upload" accept="image" on-change="uploadPic">
+
+    </div>
+        <!-- 裁剪图片dialog -->
+        <paper-dialog id="croppieDialog" class="dialogs" no-cancel-on-outside-click modal on-iron-overlay-closed = "_destroy">
+            <h2>请对图片进行裁剪</h2>
+            <div id="cropImgBox" style="padding: 0;width: 100%;">
+              <img id="cropImg" src$="{{cropImgSrc}}" style="max-width: 100%;max-height: 400px;"/>
+            </div>
+            <div class="buttons">
+              <paper-button dialog-dismiss >取消</paper-button>
+              <paper-button dialog-confirm on-click="_uploadCropImg">确定</paper-button>
+            </div>
+        </paper-dialog>
+        <!-- 保存 -->
+    <iron-ajax
+        id="getVehicleImages"
+        method="GET"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/getVehicleImages')}}"
+        Content-Type="application/json">
+    </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    let form = new FormData()
+    class RegisterPhoto extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-photo'; }
+      static get properties() {
+        return {
+            isBack: {
+                type: Boolean,
+                value: true
+            },
+            isNext: {
+              type: Boolean,
+              value: false
+            },
+            route: {
+              type: String,
+              observer: 'checkRoute'
+            },
+            imgUrlList: {
+                type: Array,
+                value: ['/images/tutorial01.jpg','/images/tutorial02.jpg','/images/tutorial03.jpg','/images/tutorial04.jpg','/images/tutorial05.jpg']
+            },
+            photos:{
+                type: Array,
+                value: ['/images/upload.png','/images/upload.png','/images/upload.png','/images/upload.png','/images/upload.png']
+            },
+            index: {
+                type: Number,
+                value: 0
+            },
+            vehicleId: {
+                type: String,
+                value: JSON.parse(localStorage.vehicleId) || ''
+            }
+        };
+      }
+      static get observers(){
+        return [
+        ]
+      }
+      async checkRoute(route) {
+        if (route === 'register-photo') {
+            if (window.location.toString().indexOf('?') != -1) {
+                let st = this.getViewParam().st
+                token['st'] = st
+                this.st = st
+                this.$.getVehicleImages.params = {
+                    vehicleId: this.vehicleId
+                }
+                let res = await this.$.getVehicleImages.generateRequest().completes
+                let imgUrlList = res.response.imgUrlList
+                this.initPic(imgUrlList)
+            } else {
+                this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+            }
+        }
+      }
+      initPic(imgUrlList) {
+        this.index = imgUrlList.length
+        if (this.index <= 5) {
+            this.splice('photos', 0, this.index, ...imgUrlList)
+        } else {
+            this.photos = imgUrlList
+        }
+      }
+      async goNext () {
+          form.append('vehicleId', this.vehicleId)
+          let res = await this.uploadAjax()
+          if (res.success) {
+              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '上传成功'}, bubbles: true, composed: true}))
+              let result = await this.$.getVehicleImages.generateRequest().completes
+              let imgUrlList = result.response.imgUrlList
+              this.initPic(imgUrlList)
+          } else {
+              this.dispatchEvent(new CustomEvent('toast'))
+          }
+      }
+      setUploadPic() {
+        this.$.upload.click()
+      }
+      /**
+       * 图片上传前预览
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+        uploadPic(e){
+            let that = this
+            let file = e.target.files[0] || e.dataTransfer.files[0];
+            var url = this.getObjectURL(file);
+            Promise.resolve(this.cropImgSrc = url).then(res=> {
+                var el = this.$.cropImg;
+                this.vanilla = new Cropper(el, {
+                    aspectRatio: 16/9,
+                    cropBoxMovable: false,
+                    movable : true,
+                    cropBoxResizable: false,
+                    dragMode: 'move'
+                })
+                this.$.croppieDialog.open();
+            })
+            
+        }
+        _uploadCropImg () {
+            this.vanilla.getCroppedCanvas().toBlob(files => {
+                let url = this.getObjectURL(files);
+                form.append('file', files)
+                this.index++
+                if (this.index <= 5) {
+                    this.splice('photos', this.index -1, 1 , url)
+                } else {
+                    this.push('photos', url)
+                }
+            })
+        }
+        _destroy(){
+            if(this.vanilla){
+                this.vanilla.destroy();
+                 // 清空file
+            }
+        }
+        /**
+       * 图片上传的ajax
+       * @param  {[type]} form [description]
+       * @return {[type]}      [description]
+       */
+        uploadAjax () {
+            var promise = new Promise((resolve, reject)=> {
+                var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+                xhr.open("post", this.setUrl('owner/uploadFile'), true);
+                xhr.responseType = 'json';
+                xhr.setRequestHeader('Accept', 'application/json');
+                xhr.setRequestHeader('st',this.st);
+                xhr.onreadystatechange = handler
+                xhr.send(form); //开始上传，发送form数据
+                function handler() {
+                    if (this.readyState !== 4) {
+                        return
+                    }
+                    if (this.status === 200) {
+                        resolve(this.response);
+                    }else {
+                        reject(new Error(this.statusText))
+                    }
+                }
+            })
+            return promise 
+        }
+    }
+
+    window.customElements.define(RegisterPhoto.is, RegisterPhoto);
+  </script>
+</dom-module>

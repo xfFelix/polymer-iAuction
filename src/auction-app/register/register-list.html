@@ -1,0 +1,261 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+<link rel="import" href="../components/no-data.html">
+
+<dom-module id="register-list">
+  <template>
+    <style include="comment-styles">
+      .date-body{
+          margin: 10px;
+          background: #F5F5F5;
+          box-sizing: border-box;
+      }
+      .date{
+          width: 50%;
+          padding: 5px 0;
+          box-sizing: border-box;
+      }
+      .date:nth-child(odd){
+          float: left;
+      }
+      .pay-money{
+        color: #D0021B;
+      }
+      .btn-list{
+          margin: 10px 0;
+          box-sizing: border-box;
+          /* float: left; */
+      }
+      .btn{
+        border: 1px solid #4A90E2;
+        border-radius: 5px;
+        display: inline-block;
+        padding: 5px 10px;
+        margin: 5px 10px;
+        box-sizing: border-box;
+        color: #4A90E2;
+      }
+    </style>
+    <register-header title="預約拍賣日期" is-back="{{isBack}}"></register-header>
+    <div>
+        <div id="container">
+            <img class="header_img" src="../../../images/banner.jpg"/>
+            <h4>基本资料</h4>
+            <div class="config-body">
+                <div class="body-attr">
+                    <div class="attr-name">姓名</div>
+                    <div class="attr-value">{{name}}</div>
+                </div>
+                <div class="body-attr">
+                    <div class="attr-name">手機號碼</div>
+                    <div class="attr-value">{{mobile}}</div>
+                </div>
+                <div class="body-attr">
+                    <div class="attr-name">E-mail</div>
+                    <div class="attr-value">{{email}}</div>
+                </div>
+            </div>
+            <div class="title-btn">
+                <h4>預約拍賣日期</h4>
+                <div class="confirm" on-click="changeDate">确定</div>
+            </div>
+            <hr/>
+            <div class="date-body">
+                <vaadin-radio-group value="{{selectedDate}}">
+                    <template is="dom-repeat" items="{{dateList}}">
+                        <vaadin-radio-button value="{{item.slot}}" class="date">{{formatDateTime(item.slot)}}</vaadin-radio-button>
+                    </template>
+                </vaadin-radio-group>
+            </div>
+            <div class="title-btn">
+                <h4>車輛資料</h4>
+                <div class="confirm" on-click="addVehicle">添加車輛</div>
+            </div>
+            <hr/>
+            <template is="dom-if" if="{{checkList(vehicleList.length)}}">
+                <template is="dom-repeat" items="{{vehicleList}}">
+                    <div class="vehicle-list">
+                        <div class="body-attr">
+                            <div class="attr-value">{{item.brandName}} </div>
+                            <div class="attr-name">車牌: {{item.vehicleLicense}}&nbsp;&nbsp;
+                                <template is="dom-if" if="{{item.paymentComplete}}">
+                                    <span class="pay-money">已付</span>
+                                </template>
+                                <template is="dom-if" if="{{!item.paymentComplete}}">
+                                    <span class="pay-money">未付</span>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="btn-list">
+                            <div class="btn" on-click="goUpdate">修改資料</div>
+                            <div class="btn" on-click="goPhoto">上傳相片</div>
+                            <div class="btn" on-click="goQrcode">二維碼(入場用)</div>
+                            <div class="btn" on-click="goHistory">拍賣記錄</div>
+                            <div class="btn" on-click="goAnswer">問與答</div>
+                        </div>
+                        <hr/>
+                    </div>
+                </template>
+            </template>
+            <template is="dom-if" if="{{!checkList(vehicleList.length)}}">
+                <div class="no-data">
+                    <no-data></no-data>
+                </div>
+            </template>
+        </div>
+
+    </div>
+        <!-- 预约时间列表 -->
+        <iron-ajax
+            id="getDateList"
+            method="GET"
+            url = "{{setUrl('public/seller/auctionDate')}}"
+            Content-Type="application/json">
+        </iron-ajax>
+        <!-- 获取車輛列表 -->
+        <iron-ajax
+            id="getOwnerList"
+            method="GET"
+            params="{{token}}"
+            headers="{{token}}"
+            url = "{{setUrl('owner/getVehicleListBeforeAuctionStart')}}"
+            handle-as="json"
+            Content-Type="application/json">
+        </iron-ajax>
+        <!-- 获取出价列表 -->
+        <iron-ajax
+            id="updateReverseDate"
+            method="POST"
+            headers="{{token}}"
+            url = "{{setUrl('owner/updateReverseDate')}}"
+            handle-as="json"
+            Content-Type="application/json">
+        </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterList extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-list'; }
+      static get properties() {
+        return {
+            isBack: {
+                type: Boolean,
+                value: false
+            },
+            selectedDate: {
+                type: String,
+                observer: 'checkDate'
+            },
+            route: {
+                type: String,
+                observer: 'checkRoute'
+            }
+        };
+      }
+      static get observers(){
+        return [
+        ]
+      }
+      async checkRoute (route) {
+          if (route === 'register-list') {
+            let res = await this.$.getDateList.generateRequest().completes
+            this.dateList = res.response
+            if (window.location.toString().indexOf('?') != -1) {
+                let st = this.getViewParam().st
+                token['st'] = st
+                let owner = await this.$.getOwnerList.generateRequest().completes
+                this.name = owner.response.name
+                this.mobile = owner.response.mobile
+                this.email = owner.response.email
+                this.reserveDate = owner.response.reserveDate
+                this.vehicleList = owner.response.vehicleList
+                if (!this.reserveDate) {
+                    return
+                }
+                for (let date of this.dateList) {
+                    if (this.formatDateTime(date.slot) === this.reserveDate) {
+                        this.selectedDate = date.slot
+                    }
+                }               
+            } else {
+                this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+            }
+          }
+      }
+      async changeDate () {
+          this.$.updateReverseDate.body = {
+            reserveDate: this.selectedDate
+          }
+          let res = await this.$.updateReverseDate.generateRequest().completes
+          if (res.response) {
+              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '修改時間成功'}, bubbles: true, composed: true}))
+              let owner = await this.$.getOwnerList.generateRequest().completes
+              this.name = owner.response.name
+              this.mobile = owner.response.mobile
+              this.email = owner.response.email
+              this.reserveDate = owner.response.reserveDate
+              this.vehicleList = owner.response.vehicleList
+              if (!this.reserveDate) {
+                  return
+              }
+              for (let date of this.dateList) {
+                if (this.formatDateTime(date.slot) === this.reserveDate) {
+                  this.selectedDate = date.slot
+                }
+              } 
+          }
+      }
+      addVehicle () {
+          if (this.reserveDate) {
+            this.dispatchEvent(new CustomEvent('pathchange', {detail:{path: 'register/register-add-vehicle'}, bubbles: true, composed: true}))
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '請選擇預約時間'}, bubbles: true, composed: true}))
+          }
+      }
+      checkList(val) {
+          if (!val) {
+              return false
+          } else {
+              return true
+          }
+      }
+      checkDate (val) {
+          
+          console.log(this.formatDateTime(val))
+      }
+      goUpdate (e) {
+          let item = e.model.item
+          localStorage.vehicleId = JSON.stringify(item.uid)
+          console.log(item)
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'register/register-update'}, bubbles: true, composed: true}))
+      }
+      goPhoto (e) {
+          let item = e.model.item
+          localStorage.vehicleId = JSON.stringify(item.uid)
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'register/register-photo'}, bubbles: true, composed: true}))
+      }
+      goQrcode (e) {
+          let item = e.model.item
+          localStorage.vehicleId = JSON.stringify(item.uid)
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'register/register-qrcode'}, bubbles: true, composed: true}))
+      }
+      goAnswer (e) {
+          let item = e.model.item
+          localStorage.vehicleId = JSON.stringify(item.uid)
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'seller/seller-answer'}, bubbles: true, composed: true}))
+      }
+      goHistory (e) {
+          let item = e.model.item
+          localStorage.vehicleId = JSON.stringify(item.uid)
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'register/register-history'}, bubbles: true, composed: true}))
+      }
+    }
+
+    window.customElements.define(RegisterList.is, RegisterList);
+  </script>
+</dom-module>

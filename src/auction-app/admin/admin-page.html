@@ -1,0 +1,115 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<!-- 导入页面 -->
+<link rel="import" href="admin-login.html">
+<link rel="import" href="admin-home.html">
+<link rel="import" href="admin-car-detail.html">
+<link rel="import" href="admin-time.html">
+<link rel="import" href="admin-owner-list.html">
+<link rel="import" href="admin-owner-detail.html">
+<link rel="import" href="admin-ele/admin-header.html">
+
+
+<dom-module id="admin-page">
+  <template>
+    <style include = "shared-styles">
+      :host{
+        display: block;
+        min-height: calc(100vh - 26px);
+      }
+      paper-dialog{
+        /*min-width: 400px;*/
+        /*min-height: 200px;*/
+      }
+    </style>
+    <paper-dialog id="simpledialog" modal>
+      <h2>登入失敗，請重新登入；</h2>
+    </paper-dialog>
+    <admin-header hidden="{{!showHeader}}"></admin-header>
+    <iron-pages selected="{{subPage}}" attr-for-selected = "page">
+      <admin-login page="admin-login" path="{{subPage}}"></admin-login>
+      <admin-home page="admin-home" path="{{subPage}}"></admin-home>
+      <admin-car-detail page="admin-car-detail" path="{{subPage}}" uid="{{uid}}"></admin-car-detail>
+      <admin-time page="admin-time" path="{{subPage}}"></admin-time>
+      <admin-owner-list page="admin-owner-list" path="{{subPage}}"></admin-owner-list>
+      <admin-owner-detail page="admin-owner-detail" path="{{subPage}}"></admin-owner-detail>
+    </iron-pages>
+    
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminPage extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-page'; }
+      static get properties() {
+        return {
+          view:{
+            type : String
+          },
+          subRoute:{
+            type : String,
+            // observer : "_checkPage"
+          },
+          subPage : {
+            type : String,
+            observer:"pageChange"
+          },
+          showHeader:{
+            type : String,
+            value : false
+          },
+          uid:{
+            type : String
+          }
+        };
+      }
+      static get observers(){
+        return [
+          '_checkPage(subRoute,view)'
+        ]
+      }
+      // 换页
+      _checkPage(page,view){
+        // 判断是否是admin页面
+        if(view == "admin"){
+          // 更新token
+          if(localStorage.adminHeader){
+            adminHeader = JSON.parse(localStorage.getItem('adminHeader'));
+          }
+          this.updateAdminHeader(adminHeader['X-ADMIN-USERNAME'],adminHeader['X-CustomToken']);
+          if(adminHeader['X-CustomToken']){
+            this.subPage = (page) ? page : 'admin-home';
+          }else{
+            this.subPage = (page) ? page : 'admin-login';
+          }
+        }
+      }
+      pageChange(page){
+        if(page){
+          this.showHeader = (page == "admin-login") ? false : true;
+        }
+      }
+      ready (){
+        super.ready();
+        this.addEventListener('login-fail', this.loginFail);
+      }
+      loginFail (e){
+        this.$.simpledialog.open();
+        setTimeout(()=>{ 
+          localStorage.removeItem('adminHeader');
+          location.href = "/admin/admin-login";
+        },2000)
+      }
+
+
+    }
+
+    window.customElements.define(AdminPage.is, AdminPage);
+  </script>
+</dom-module>

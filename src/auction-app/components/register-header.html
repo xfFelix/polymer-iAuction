@@ -1,0 +1,58 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+   <dom-module id="register-header">
+       <template>
+           <style>
+               .header{
+                    border: 1px #D30026 solid;
+                    background: #D30026;
+                    height: 44px;
+                    /* text-align: center; */
+                    display: flex;
+                    /* vertical-align: middle; */
+                    justify-content: center;
+                    align-items: center;
+                    color: #eee;
+                    font-size: 18px;
+                    font-weight: bold;
+                }
+                .back{
+                    position: absolute;
+                    left: 12px;
+                }
+           </style>
+            <div class="header">{{title}}
+              <template is="dom-if" if="{{isBack}}">
+                <img src="/images/arrow.png" class="back" on-click="goback">
+              </template>
+            </div>
+       </template>
+
+       <script>
+           /**
+            * @customElement
+            * @polymer
+            */
+           class RegisterHeader extends Polymer.Element {
+               static get is() { return 'register-header'; }
+               static get properties() {
+                   return {
+                     isHeader: {
+                         type: Boolean
+                     },
+                     title: {
+                         type: String
+                     },
+                     isBack: {
+                         type: Boolean
+                     }
+                   }
+               }
+               goback () {
+                    window.history.back()
+                }
+               
+           }
+
+           window.customElements.define(RegisterHeader.is, RegisterHeader);
+       </script>
+   </dom-module>

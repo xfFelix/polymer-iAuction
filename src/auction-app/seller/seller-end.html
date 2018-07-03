@@ -1,0 +1,499 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-end">
+  <template>
+    <style include = "comment-styles">
+      .container{
+        box-sizing: border-box;
+      }
+      #button {
+        margin-top: 200px;
+      }
+      .header{
+        width: 100%;
+        background-color: rgba(204, 0, 0, 1);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .header-left {
+        position: absolute;
+        left: 15px;
+      }
+      .header-center .center-logo{
+        transform: scale(0.7,0.7);
+      }
+
+      .content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .content .content-time{
+        background-color: #f7a700;
+        width: 100%;
+      }
+      .content .content-time p{
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        color: #FFFFFF;
+      }
+      .content .content-car .car-name{
+        font-size: 15px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .content .content-car .car-options{
+        text-align: center;
+        color: #797979;
+      }
+      .content .content-problem{
+        color: #FF9966;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .content .content-problem .problem-button{
+        border: 1px solid #FF9966;
+        width: 40%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .content .content-problem .problem-button .button-text{
+        text-align: center;
+      }
+      .content .content-problem .problem-button .button-num{
+        width: 20px;
+        border: 1px solid blue;
+        border-radius: 50%;
+        margin-left: 7px;
+        background: #0a0ac2;
+        text-align: center;
+      }
+
+      .message-box{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 5px 0;
+      }
+      .number{
+        margin: auto 10px;
+        font-size: 38px;
+        color: #D30026;
+        box-sizing: border-box;
+      }
+      .message {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .message-list .message .message-main{
+        display: flex;
+        flex-direction: row;
+        /* justify-content: space-between; */
+        align-items: center;
+      }
+      .message-list .message .message-time{
+        color: #797979;
+      }
+      .message-list .message .message-time .time-text{
+        margin-bottom: 0;
+      }
+      .message-list .message .message-main .main-name{
+        font-size: 17px;
+        font-weight: bold;
+        margin: 5px;
+      }
+      .message-list .message .message-main .main-price{
+        /* margin-right: 10px; */
+        color: #FF0000;
+        font-weight: bold;
+        box-sizing: border-box;
+        position: absolute;
+        right: 10px;
+      }
+      .main-link {
+        margin-left: 30px;
+      }
+      .buyer-link{
+        font-weight: 100;
+        border: 1px solid #FF9966;
+        display: inline-flex;
+        width: 85px;
+        height: 25px;
+        text-align: center;
+        color: #FF9966;
+        font-size: 14px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .pop {
+        position: fixed;
+        border : 1px #DDDDDD solid;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        background: #FFFFFF;
+      }
+      .body {
+        font-family: PingFangTC-Medium;
+        font-size: 16px;
+        color: #000000;
+        font-weight: bold;
+        padding: 10px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .confirms{
+        display: flex;
+        justify-content: space-around;
+      }
+      .resolve,.reject {
+        margin: 20px auto;
+        height: 30px;
+        width: 35%;
+        border: 1px #4A90E2 solid;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .resolve{
+        color: #FFFFFF;
+        background: #4A90E2;
+        font-size: 14px;
+      }
+      .reject{
+        font-size: 14px;
+        color: #4A90E2;
+      }
+      .red{
+        color: #D30026;
+      }
+      .small {
+        text-align: center;
+        font-size: 14px;
+        color: #000000;
+      }
+      .second,.third {
+        display: none;
+      }
+      #link,#link2{
+        display: none;
+      }
+    </style>
+   
+    <div>
+      <div class="container">
+        <div class="header">
+          <!-- <div class="header-left">
+            <img src="../../../images/arrow.png" alt="" class="left-icon">
+          </div> -->
+          <div class="header-center">
+            <img src="../../../images/u342.png" alt="" class="center-logo">
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="content-time">
+            <p class="time-text">拍賣已經結束！</p>
+          </div>
+          <div class="content-car" on-click="goCarDetail" style="cursor: pointer;">
+            <p class="car-name">{{data.vehicleBrandDescription}}</p>
+            <p class="car-options">{{data.vehicleSeriesDescription}}</p>
+          </div>
+          <div class="content-problem">
+            <template is="dom-if" if="{{checkSize(data.questionSize)}}">
+              <div class="problem-button" on-click="goAnswer">
+                <p class="button-text">解答买家问题</p>
+                <div class="button-num">{{data.questionSize}}</div>
+              </div>
+            </template>
+            <template is="dom-if" if="{{!checkSize(data.questionSize)}}">
+              <div class="problem-button">
+                <p class="button-text">暫無買家問題</p>
+              </div>
+            </template>
+          </div>
+        </div>
+        <div style="display: flex;justify-content: center;align-items: center;">
+          <div class="message-list" style="width: 100%;">
+            <template is="dom-repeat" items="{{personList}}" indexAs="{{index}}">
+              <div class="message-box">
+              <div class="number">{{changeNum(index)}}.</div>
+              <div class="message">
+                <div class="message-time">
+                  <p class="time-text">{{formatDate(item.createAt)}}</p>
+                </div>
+                <div class="message-main">
+                  <!-- <template is="dom-if" if="{{checkWinner(item.winner)}}">
+                    <p class="main-name">{{item.buyerName}} <span class="buyer-link" on-click="goBuyer">聯絡買家</span></p>
+                    <div style="display: flex;justify-content: center;align-items: center;">
+                      <img src="../../../images/u555.png" alt="" style="width: 40px;height: 40px;">
+                      <span class="main-price">{{abs(item.bidPrice)}}</span>
+                    </div>
+                  </template> -->
+                  <!-- <template is="dom-if" if="{{!checkWinner(item.winner)}}"> -->
+                    <p class="main-name">買家00{{changeNum(index)}}</p>
+                    <template is="dom-if" if="{{item.own}}">
+                      <p class="main-link" style="color: #4A90E2;" on-click="goBuyer">聯係買家</p>
+                    </template>
+                    <template is="dom-if" if="{{!item.own}}">
+                      <p class="main-link">聯係買家</p>
+                    </template>
+                    <span class="main-price">{{abs(item.bidPrice)}}</span>
+                  <!-- </template> -->
+                </div>
+              </div>
+            </div>
+            </template>
+          </div>
+        </div>
+        <div id="button" class="second" on-click="popSecond">聯繫出價第二高的買家</div>
+        <div id="button" class="third" on-click="popThird">聯繫出價第三高的買家</div>
+
+      </div>
+      <div id="receive" class="pop">
+        <div class="title"></div>
+        <div class="body">最高出價賣家的價格是 <span class="red">${{abs(person.bidPrice)}}</span>
+          是否接受此價格成交？</div>
+        <div class="confirms">
+          <div class="resolve" on-click="resolveMsg">接受</div>
+          <div class="reject" on-click="rejectMsg">不接受</div>
+        </div>
+      </div>
+      <div id="link" class="pop">
+          <div class="title"></div>
+          <div class="body">是否放棄與最高出價買家完成交易</div>
+          <div class="small">閣下需承擔由此引起的責任和費用</div>
+          <div class="confirms">
+            <div class="resolve" on-click="resolveSec">接受</div>
+            <div class="reject" on-click="rejectSec">不接受</div>
+          </div>
+        </div>
+        <div id="link2" class="pop">
+            <div class="title"></div>
+            <div class="body">是否放棄與第二出價買家完成交易</div>
+            <div class="small">閣下需承擔由此引起的責任和費用</div>
+            <div class="confirms">
+              <div class="resolve" on-click="resolveThi">接受</div>
+              <div class="reject" on-click="rejectThi">不接受</div>
+            </div>
+          </div>
+    </div>
+    <!-- 获取出价列表 -->
+      <iron-ajax
+        id="getList"
+        method="GET"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/getTopNBuyer')}}"
+        Content-Type="application/json"
+        on-response="_responList">
+      </iron-ajax>
+      <!-- 拒绝拍卖 -->
+      <iron-ajax
+        id="rejectPro"
+        method="POST"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/declineAuctionBidPrice')}}"
+        Content-Type="application/json">
+      </iron-ajax>
+      <!-- 接受拍卖最高价 -->
+      <iron-ajax
+        id="resolvePro"
+        method="POST"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/acceptAuctionBidPrice')}}"
+        Content-Type="application/json">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerEnd extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-end'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            observer: '_checkPage'
+          },
+          index: {
+            type: String
+          },
+          sort: {
+            type: Number,
+            value: 0
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      changeNum (num) {
+        let number = Number(num)
+        return ++ number
+      }
+      checkWin (index, sort) {
+        if (sort == index) {
+          return true
+        } else {
+          return false
+        }
+      }
+      checkSize (val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      checkWinner (val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      popThird () {
+        this.$.link2.style.display = 'block'
+      }
+      async resolveThi () {
+        let buyerId = this.personList[2].buyerId
+        this.$.resolvePro.body = {
+          vehicleId: this.vehicleId,
+          buyerId: buyerId
+        }
+        let res = await this.$.resolvePro.generateRequest().completes
+        if (res.response.success) {
+          localStorage.recordId = JSON.stringify(this.personList[2].recordId)
+          this.$.link2.style.display = 'none'
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'seller/seller-pay'}, bubbles: true, composed: true}))
+        }
+      }
+      rejectThi () {
+        this.$.link2.style.display = 'none'
+      }
+      popSecond () {
+        this.$.link.style.display = 'block'
+      }
+      async resolveSec () {
+        this.$.resolvePro.body = {
+          vehicleId: this.vehicleId,
+          buyerId: this.buyerId
+        }
+        let res = await this.$.resolvePro.generateRequest().completes
+        if (res.response.success) {
+          localStorage.recordId = JSON.stringify(this.personList[1].recordId)
+          this.$.link.style.display = 'none'
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'seller/seller-pay'}, bubbles: true, composed: true}))
+        }
+      }
+      rejectSec () {
+        this.$.link.style.display = 'none'
+      }
+      async resolveMsg () {
+        this.$.resolvePro.body = {
+          vehicleId: this.vehicleId,
+          buyerId: this.buyId
+        }
+        let res = await this.$.resolvePro.generateRequest().completes
+        if (res.response.success) {
+          sessionStorage.buyerId = JSON.stringify(this.buyId)
+          this.$.receive.style.display = 'none'
+          
+          this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'seller/seller-call-buyer'}, bubbles: true, composed: true}))
+        }
+      }
+      async rejectMsg () {
+        this.$.rejectPro.body = {
+          vehicleId: this.vehicleId,
+          buyerId: this.buyId
+        }
+        let res = await this.$.rejectPro.generateRequest().completes
+        if (res.response.success) {
+          this.$.receive.style.display = 'none'
+          
+        }
+      }
+      _responList(e) {
+        let data = e.detail.response
+        this.data = data
+        this.personList = data.ownerVehiclePriceHistoriesResponseViewList
+        if (!this.personList || !this.personList.length) {
+          return this.$.receive.style.display = 'none'
+        }
+        this.person = this.personList[0]
+        this.buyId = this.person.buyerId
+        if (this.personList[1]) {
+          this.buyerId = this.personList[1].buyerId
+        }
+        this.vehicleId = data.vehicleId
+        if (data.currentBuyerIndex) {
+          this.$.receive.style.display = 'none'
+          if (data.currentBuyerIndex == 1 && this.personList[1]) {
+            this.shadowRoot.querySelector('.second').style.display = 'block'
+          } else if (data.currentBuyerIndex == 2&&this.personList[2]) {
+            this.shadowRoot.querySelector('.third').style.display = 'block'
+          }
+        } else {
+          this.$.receive.style.display = 'block'
+          this.shadowRoot.querySelector('.second').style.display = 'none'
+          this.shadowRoot.querySelector('.third').style.display = 'none'
+        }
+        localStorage.vehicleId = JSON.stringify(this.vehicleId)
+      }
+      _checkPage (val) {
+        if (val === 'seller-end') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.vehicleId = this.getViewParam().vehicleId
+            this.$.getList.params = {
+              vehicleId: this.vehicleId
+            }
+            this.$.getList.generateRequest();
+            
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+      goBuyer (e) {
+        let item = e.model.item
+        Promise.resolve(sessionStorage.buyerId = JSON.stringify(item.buyerId)).then(res => {
+          let buyerId = JSON.parse(sessionStorage.buyerId)
+          if (buyerId) {
+            this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-call-buyer"},bubbles: true, composed: true}));
+          }
+        }).catch(err => {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"buyerId保存出錯"},bubbles: true, composed: true}));
+        })
+      }
+      goAnswer (e) {
+        localStorage.vehicleId = JSON.stringify(this.vehicleId)
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-answer"},bubbles: true, composed: true}));
+      }
+      goCarDetail(e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-car-detail"},bubbles: true, composed: true}));
+      }
+    }
+
+    window.customElements.define(SellerEnd.is, SellerEnd);
+  </script>
+</dom-module>

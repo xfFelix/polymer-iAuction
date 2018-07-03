@@ -1,0 +1,87 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<!-- 导入页面 -->
+<link rel="import" href="register-home.html">
+<link rel="import" href="register-mine.html">
+<link rel="import" href="register-mobile.html">
+<link rel="import" href="register-pay.html">
+<link rel="import" href="register-success.html">
+<link rel="import" href="register-upload-picture.html">
+<link rel="import" href="register-qrcode.html">
+<link rel="import" href="register-owner.html">
+<link rel="import" href="register-privacy.html">
+<link rel="import" href="register-tac.html">
+<link rel="import" href="register-pay-success.html">
+<link rel="import" href="register-list.html">
+<link rel="import" href="register-add-vehicle.html">
+<link rel="import" href="register-update.html">
+<link rel="import" href="register-photo.html">
+<link rel="import" href="register-history.html">
+
+<dom-module id="register-page">
+  <template>
+    <style include = "shared-styles">
+      
+    </style>
+    
+    <iron-pages selected="{{subPage}}" attr-for-selected = "page">
+      <register-home page="register-home" route$="[[subRoute]]"></register-home>
+      <register-mine page="register-mine" sub-route$="[[subRoute]]"></register-mine>
+      <register-mobile page="register-mobile" sub-route$="[[subRoute]]"></register-mobile>
+      <register-pay page="register-pay" sub-route$="[[subRoute]]"></register-pay>
+      <register-success page="register-success" sub-route$="[[subRoute]]"></register-success>
+      <register-upload-picture page="register-upload-picture" route$="[[subRoute]]"></register-upload-picture>
+      <register-qrcode page="register-qrcode" sub-route$="[[subRoute]]"></register-qrcode>
+      <register-owner page="register-owner" route$="[[subRoute]]"></register-owner>
+      <register-privacy page="register-privacy" route$="[[subRoute]]"></register-privacy>
+      <register-tac page="register-tac" route$="[[subRoute]]"></register-tac>
+      <register-pay-success page="register-pay-success" sub-route$="[[subRoute]]"></register-pay-success>
+      <register-list page="register-list" route$="[[subRoute]]"></register-list>
+      <register-add-vehicle page="register-add-vehicle" route$="[[subRoute]]"></register-add-vehicle>
+      <register-update page="register-update" route$="[[subRoute]]"></register-update>
+      <register-photo page="register-photo" route$="[[subRoute]]"></register-photo>
+      <register-history page="register-history" route$="[[subRoute]]"></register-history>
+    </iron-pages>
+    
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterPage extends Polymer.Element {
+      static get is() { return 'register-page'; }
+      static get properties() {
+        return {
+          view:{
+            type : String
+          },
+          subRoute:{
+            type : String,
+            // observer : "_checkPage"
+          }
+        };
+      }
+      static get observers(){
+        return [
+          '_checkPage(subRoute,view)'
+        ]
+      }
+      _checkPage(page,view){
+        // 判断是否是register页面
+        if(view == "register"){
+          this.subPage = (page) ? page : 'register-home';
+        }
+      }
+      ready () {
+        super.ready()
+      }
+    }
+
+    window.customElements.define(RegisterPage.is, RegisterPage);
+  </script>
+</dom-module>

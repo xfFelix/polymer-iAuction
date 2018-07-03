@@ -1,0 +1,642 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+
+
+<dom-module id="register-mine">
+  <template>
+    <style include = "shared-styles">
+      :host{
+        box-sizing: border-box;
+        font-size: 24px;
+        overflow-x: auto;
+        width: 100%;
+      };
+      #button{
+        position: static;
+      }
+      .licence,.type,.email,.mobile,.factory,.name,.sex{
+        min-width:  260px;
+      }
+      .forbid{
+        position: relative;
+      }
+      h4{
+        margin: 10px 0;
+        padding:0 12px;
+        text-align: center;
+      }
+      .section{
+        margin: 10px 0;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+      .section_content{
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+      }
+      .box-list{
+        float: left;
+        width: 50%;
+      }
+      #button{
+        position: static;
+        width: 90%;
+      }
+      .box{
+        background-color: #ffffff;
+      }
+      .notice{
+        width: 100%;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        /* align-items: center; */
+        font-size: 13px;
+        margin-top: 20px;
+        padding:0 20px;
+        box-sizing: border-box;
+      }
+      .next {
+        width: 80px;
+        border: 1px solid;
+        height: 40px;
+        display: inline-flex;
+        justify-content: center;
+        margin: auto;
+        align-items: center;
+      }
+      .sms-code {
+        align-items: center;
+        font-size: 20px;
+        justify-content: center;
+      }
+      .code-text{
+        width: auto;
+        min-width: 30%;
+      }
+      #button2 {
+        font-size: 20px;
+        height: 35px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        margin: auto;
+        margin-left: 10px;
+        width: 80px;
+      }
+      .v-textfield{
+        background: #ffffff;
+      }
+    </style>
+    <register-header title="{{title}}" is-back="{{isBack}}"></register-header>
+    <div style="box-sizing: border-box;">
+
+      <div id="container">
+        <img class="header_img" src="../../../images/banner.jpg"/>
+
+        
+
+        <h4> 基本資料</h4>
+        <div class="section">
+            <div class="section_content">
+              <div>姓名<span>*</span>:</div> <vaadin-text-field class="name" on-blur="isName" value="{{name}}"></vaadin-text-field>
+            </div>
+            <span class="forbid" hidden="{{nameForbid}}">{{naForbidText}}</span>
+        </div>
+
+        <div class="section">
+            <div class="section_content">
+              <div>稱呼<span>*</span>:</div><vaadin-combo-box class="sex" placeholder="請選擇" items="[[sexList]]" item-label-path="name" item-value-path="uid" selected-item="{{sex}}"></vaadin-combo-box>
+            </div>
+            <span class="forbid" hidden="{{sexForbid}}">{{sexForbidText}}</span>
+        </div>
+
+        <div class="section">
+          <div class="section_content">
+            <div>手提<span>*</span>:</div>
+            <vaadin-text-field class="mobile" value="{{mobile}}" on-blur="isMobile"></vaadin-text-field>
+          </div>
+          <span class="forbid" hidden="{{mobileForbid}}">{{moForbidText}}</span>
+        </div>
+
+        <div class="section">
+          <div class="section_content">
+              <div>E-mail<span></span>:</div>
+              <vaadin-text-field class="email" value="{{email}}" on-blur="isEmail"></vaadin-text-field>
+          </div>
+          <span class="forbid" hidden="{{emForbid}}">{{emForbidText}}</span>
+        </div>
+        <h4>驗證手機號碼</h4>
+        <div class="sms-code">
+          <div style="margin-left: 10px;font-size: 14px;">
+            驗證碼：<vaadin-text-field class="code-text" value="{{smsAccessCode}}">
+            </vaadin-text-field>
+            <div id="button2" on-click="getSmsCode" disabled="{{smsButtonDisabled}}">{{getSMScodeLabel}}</div>
+          </div>
+        </div>
+        <!-- <h4>車輛信息</h4>
+        <div class="section">
+          <div class="section_content">
+            <div>車廠<span>*</span>:</div>
+            <vaadin-combo-box class="factory" placeholder="請選擇" items="[[carFactoryList]]" item-label-path="vehicleName" item-value-path="vehicleId" selected-item="{{carFactory}}">
+            </vaadin-combo-box>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section_content">
+            <div>型號<span>*</span>:</div>
+            <vaadin-text-field class="type" value="{{vehicleSeriesName}}" on-blur="isSeries"></vaadin-text-field>
+          </div>
+          <span class="forbid" hidden="{{serForbid}}">{{serForbidText}}</span>
+        </div>
+
+        <div class="section">
+            <div class="section_content">
+              <div>車牌<span></span>:</div>
+              <vaadin-text-field class="licence" value="{{vehicleLicenseNo}}"></vaadin-text-field>
+            </div>
+            <span class="forbid" hidden="{{liForbid}}">{{liForbidText}}</span>
+        </div>
+
+        <h4>預約時間</h4>
+        <div class="box">
+          <dom-repeat items="{{dateList}}">
+            <template>
+              <div class="box-list">
+                <label>
+                  <input class="input3" type="radio" name="date" value$="{{item.slot}}"/>
+                  {{formatDateTime(item.slot)}}
+                </label>
+              </div>
+            </template>
+          </dom-repeat>
+        </div> -->
+        <div class="notice">
+          <div style="white-space: nowrap;">
+            <vaadin-checkbox checked="{{isClause}}">我同意</vaadin-checkbox>
+            <div style="display: inline;">
+              《<a href="" on-click="goTac">使用條款與免責聲明</a>》
+             及《<a href="" on-click="goPrivacy">隱私政策聲明</a>》
+            </div>
+          </div>
+        </div>
+        <template is="dom-if" if="{{isNext}}">
+            <div id="button" on-click="confirm">提交登記</div>
+        </template>
+        <template is="dom-if" if="{{!isNext}}">
+            <div id="button" style="background-color: #797979;">提交登記</div>
+        </template>
+        </div>
+
+    </div>
+    <!-- 车厂列表 -->
+      <!-- <iron-ajax
+        auto
+        id="getFactoryList"
+        method="GET"
+        url = "{{setUrl('public/seller/vehicle')}}"
+        Content-Type="application/json"
+        on-response="_responFactory">
+      </iron-ajax> -->
+      <!-- 预约时间列表 -->
+      <!-- <iron-ajax
+        auto
+        id="getDateList"
+        method="GET"
+        url = "{{setUrl('public/seller/auctionDate')}}"
+        Content-Type="application/json"
+        on-response="_responDate">
+      </iron-ajax> -->
+      <!-- 性別列表 -->
+      <iron-ajax
+        auto
+        id="getSexList"
+        method="GET"
+        url = "{{setUrl('public/seller/salutation')}}"
+        Content-Type="application/json"
+        on-response="_responSexList">
+      </iron-ajax>
+      <!-- 獲取驗證碼 -->
+      <iron-ajax
+        id="getSmsCode"
+        method="POST" headers="{{header}}"
+        body="{}"
+        url = "{{setUrl('public/seller/requestSMS')}}"
+        Content-Type="application/json">
+    </iron-ajax>
+      <!-- 保存 -->
+      <iron-ajax
+        id="checkRegister"
+        method="POST"
+        url = "{{setUrl('public/seller/registration')}}"
+        Content-Type="application/json"
+        handle-as="json">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterMine extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-mine'; }
+      static get properties() {
+        return {
+          title: {
+            type: String,
+            value: '登记资料'
+          },
+          isBack: {
+            type: Boolean,
+            value: false
+          },
+          // 车厂选项
+          carFactoryList: {
+            type: Array
+          },
+          dateList: {
+            type: Array
+          },
+          // 选中的车厂
+          carFactory: {
+            type: Object
+          },
+          // 称呼选项
+          sexList: {
+            type: Array
+          },
+          // 选中的称呼
+          sex: {
+            type: Object
+          },
+          // 称呼提示
+          sexForbid : {
+            type: Boolean,
+            value : true
+          },
+          sexForbidText :{
+            type: String,
+            value: '4'
+          },
+          // 当前路由
+          subRoute: {
+            type: String,
+            // observer: 'checkRoute'
+          },
+          // 姓名
+          name: {
+            type: String
+          },
+          // 姓名未填提示
+          nameForbid:{
+            type: Boolean,
+            value: true
+          },
+          // 姓名未填提示内容
+          naForbidText: {
+            type: String,
+            value: '姓名不能為空'
+          },
+          // 手提
+          mobile:{
+            type: String
+          },
+          // 手机未填提示
+          mobileForbid: {
+            type: Boolean,
+            value: true
+          },
+          // 手提未填提示内容
+          moForbidText:{
+            type: String,
+            value: '手機號碼不能為空'
+          },
+          // 邮箱
+          email : {
+            type: String
+          },
+          // 邮箱提示
+          emForbid : {
+            type: Boolean,
+            value: true
+          },
+          // 邮箱提示内容
+          emForbidText : {
+            type : String,
+            value : 'Email不能為空'
+          },
+          // 型号
+          vehicleSeriesName : {
+            type: String
+          },
+          // 型号提示
+          serForbid: {
+            type: Boolean,
+            value : true
+          },
+          // 型号提示内容
+          serForbidText: {
+            type: String,
+            value: '型號不能為空'
+          },
+          // 车牌
+          vehicleLicenseNo : {
+            type: String
+          },
+          // 车牌提示
+          liForbid: {
+            type: Boolean,
+            value: true
+          },
+          // 车牌提示内容
+          liForbidText:{
+            type : String,
+            value: '車牌不能為空'
+          },
+          isClause: {
+            type: Boolean,
+            value: false
+          },
+          isPrivacy: {
+            type: Boolean,
+            value : true
+          },
+          isNext: {
+            type: Boolean,
+            value: false
+          },
+          // 验证码
+          smsAccessCode: {
+            type : String,
+            observer: 'checkNum'
+          },
+          // 发送验证码按钮 内容
+          getSMScodeLabel:{
+            type: String,
+            value: '發送'
+          }
+        };
+      }
+      static get observers(){
+        return [
+          'checkBox(name, mobile, sex, isClause, email, smsAccessCode)'
+        ]
+      }
+      checkNum (val) {
+        var reg = new RegExp("^[0-9]*$");
+        if (!reg.test(val)) {
+          return this.smsAccessCode = ''
+        }
+      }
+      /**
+       * 获取验证码
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+       getSmsCode (e) {
+        let mobile = this.mobile
+        let secCount = 60;
+        if(mobile && !this.smsButtonDisabled){
+            this.$.getSmsCode.body = {
+                "mobile": mobile
+            };
+            this.$.getSmsCode.generateRequest().completes.then(res => {
+              if (!res.response.success) {
+                this.smsButtonDisabled = false;
+                return this.dispatchEvent(new CustomEvent('toast', {detail:{msg:res.response.failedReason},bubbles: true, composed: true}));
+              }
+              var timeCount = setInterval(() => {
+                  if(secCount > 0){
+                      --secCount;
+                      this.getSMScodeLabel = secCount + "s";
+                  }else{
+                      window.clearInterval(timeCount);
+                      this.getSMScodeLabel = "獲取";
+                      this.smsButtonDisabled = false;
+                  }
+              },1000);
+            })
+            this.smsButtonDisabled = true;
+        }
+      }
+      goPrivacy (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-privacy"},bubbles: true, composed: true}));
+      }
+      goTac (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-tac"},bubbles: true, composed: true}));
+      }
+      checkBox (name, mobile, sex, isClause, email, smsAccessCode) {
+        if (name && mobile && sex && isClause && smsAccessCode) {
+          if (email) {
+            let checked = this.checkEmail(email)
+            if (!checked) {
+              return this.isNext = false
+            }
+          }
+          let checkmobile = this.isPoneAvailable(mobile)
+          if (!checkmobile) {
+            return this.isNext = false
+          }
+          return this.isNext = true
+        } else {
+          return this.isNext = false
+        }
+      }
+      ready() {
+        super.ready();
+      }
+      /**
+       * 获取车厂列表-回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responFactory (e) {
+        this.carFactoryList = e.detail.response
+      }
+      /**
+       * 性別列表 —— 回調
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responSexList(e) {
+        this.sexList = e.detail.response
+      }
+      /**
+       * 获取日期列表-回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responDate(e) {
+        this.dateList = e.detail.response
+      }
+      /**
+       * 姓名验证
+       * @param  {[type]}  e [description]
+       * @return {Boolean}   [description]
+       */
+      isName(e) {
+        let name = e.target.value
+        if (!name) {
+          this.naForbidText = '姓名不能為空'
+          return this.nameForbid = false
+        } else {
+          return this.nameForbid = true
+        }
+      }
+      /**
+       * 手提号验证
+       * @param  {[type]}  e [description]
+       * @return {Boolean}   [description]
+       */
+      isMobile(e) {
+        let mobile = e.target.value
+        if (!mobile) {
+          this.moForbidText = '手機號碼不能為空'
+          return this.mobileForbid = false
+        }
+        if (this.isPoneAvailable(mobile)){
+          return this.mobileForbid = true
+        } else {
+          this.moForbidText = '手機號碼格式錯誤，請重新輸入'
+          return this.mobileForbid = false
+        }
+      }
+      /**
+       * 邮箱验证
+       * @param  {[type]}  e [description]
+       * @return {Boolean}   [description]
+       */
+      isEmail(e) {
+        let email = e.target.value
+        if (!email) {
+          return this.emForbid = true
+        } else if (this.checkEmail(email)){
+          return this.emForbid = true
+        } else {
+          this.emForbidText = 'Email格式錯誤，請重新輸入'
+          return this.emForbid = false
+        }
+      }
+      /**
+       * 型号验证
+       * @param  {[type]}  e [description]
+       * @return {Boolean}   [description]
+       */
+      isSeries(e) {
+        let series = e.target.value
+        if (!series) {
+          this.serForbidText = '型號不能為空'
+          return this.serForbid = false
+        } else {
+          return this.serForbid = true
+        }
+      }
+      /**
+       * 车牌验证
+       * @param  {[type]}  e [description]
+       * @return {Boolean}   [description]
+       */
+      isLicense(e) {
+        let license = e.target.value
+        if (!license) {
+          this.liForbidText = '車牌不能為空'
+          return this.liForbid = false
+        } else {
+          return this.liForbid = true
+        }
+      }
+      async confirm(e) {
+        if (!this.name) {
+          return this.nameForbid = false
+        } else if(!this.mobile) {
+          return this.mobileForbid = false
+        } else if (!this.sex){
+          return this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '請選擇稱呼'}, bubbles: true, composed: true}));
+        }
+        this.$.checkRegister.body = {
+          name : this.name,
+          salutation : this.sex.uid,
+          mobile : this.mobile,
+          smsAccessCode: this.smsAccessCode
+        }
+        if (this.email) {
+          this.$.checkRegister.body.email = this.email
+        }
+        let res = await this.$.checkRegister.generateRequest().completes
+        if (res.response) {
+          localStorage.st = res.response.token
+          this.dispatchEvent(new CustomEvent('pathchange', {detail:{path: 'register/register-success'}, bubbles: true, composed: true}))
+        }
+      }
+      /**
+       * 下一步 button
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      goNext(e) {
+        if (!this.name) {
+          return this.nameForbid = false
+        } else if(!this.mobile) {
+          return this.mobileForbid = false
+        } else if (!this.sex){
+          return console.log('稱呼不能為空')
+        } else if (!this.vehicleSeriesName) {
+          return this.serForbid = false
+        } else if (!this.carFactory){
+          return console.log('車廠不能為空')
+        }
+        let dateArr = this.shadowRoot.querySelectorAll('.input3');
+        let reserveDate1 = '';
+        for (let date of dateArr) {
+          if (date.checked) {
+            reserveDate1 = date.value
+          }
+        }
+        if (!reserveDate1) {
+          return console.log('請填寫預約時間')
+        }
+        let register = {};
+        let name = this.name;
+        let salutation = this.sex.uid;
+        let mobile = this.mobile;
+        let email = this.email;
+        let vehicleBrandId = this.carFactory.vehicleId;
+        let vehicleBrandName = this.carFactory.vehicleName;
+        let vehicleSeriesName = this.vehicleSeriesName;
+        let vehicleLicenseNo = this.vehicleLicenseNo;
+        register = {
+          name : name,
+          salutation : salutation,
+          mobile : mobile,
+          email : email,
+          vehicleBrandId: vehicleBrandId,
+          vehicleBrandName: vehicleBrandName,
+          vehicleSeriesName : vehicleSeriesName,
+          vehicleLicenseNo : vehicleLicenseNo,
+          reserveDate1: reserveDate1
+        }
+        new Promise((resolve,reject) => {
+          sessionStorage.register = JSON.stringify(register)
+          let data = JSON.parse(sessionStorage.register)
+          if (data) {
+            resolve(data)
+          } else {
+            reject(err)
+          }
+        }).then(res => {
+          this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-mobile"},bubbles: true, composed: true}));
+        }).catch(err => {
+          console.error(error)
+        })
+      }
+    }
+
+    window.customElements.define(RegisterMine.is, RegisterMine);
+  </script>
+</dom-module>

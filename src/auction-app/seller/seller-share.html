@@ -1,0 +1,296 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-share">
+  <template>
+    <style include = "shared-styles">
+      .red{
+        color: red;
+      }
+      .container{
+        box-sizing: border-box;
+      }
+      .header{
+        width: 100%;
+        background-color: rgba(204, 0, 0, 1);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .header-left {
+        position: absolute;
+        left: 15px;
+      }
+      .header-center .center-text{
+        font-size: 20px;
+        color: #FFFFFF
+      }
+      
+      .content{
+        width: 100%;
+      }
+      .content .swipe-list .swipe{
+        width: 100%;
+        height: 200px;
+      }
+      .content .swipe-list .swipe .swipe-pic{
+        width: 100%;
+        height: 200px;
+      }
+      .car-detail{
+        width: 100%;
+        transform:scale(0.9,0.9);
+      }
+      .car-detail .detail-name .name-text{
+        margin-top: 5px;
+        margin-bottom: 0;
+        font-size: 18px;
+        font-weight: bold;
+      }
+      .car-detail .detail-time{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .car-detail .detail-time p{
+        margin-top: 0px;
+      }
+      .car-detail .detail-time .time-text{
+        font-size: 15px;
+        color: #797979;
+      }
+      .car-detail .detail-time .price-text{
+        font-size: 18px;
+        font-weight: bold;
+        color: #797979;
+      }
+      .car-detail .detail-time .price-text .price-num{
+        color: #FF0000;
+      }
+      .car-detail .detail-img{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #797979;
+      }
+      .download {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #4A90E2;
+        font-weight: 600;
+        border: 1px solid;
+        height: 40px;
+        border-radius: 100%;
+        margin-bottom: 5px;
+        cursor: pointer;
+      }
+      .configuration .config-title .title-text{
+        text-align: center;
+        vertical-align: middle;
+        font-size: 18px;
+        font-weight: bold;
+        color: #797979;
+      }
+      .configuration .config-body .body-attr{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+        font-size: 16px;  
+      }
+      .configuration .config-body .body-attr:nth-child(even){
+        background-color: #f2f2f2;
+      }
+      .configuration .config-body .body-attr .attr-name{
+        margin-left: 10px;
+        color: #797979;
+      }
+      .configuration .config-body .body-attr .attr-value{
+        margin-right: 10px;
+      }
+      .des .des-title .title-text{
+        text-align: center;
+        vertical-align: middle;
+        font-size: 18px;
+        font-weight: bold;
+        color: #797979;
+      }  
+      .des .des-longtext{
+        transform: scale(0.95,0.95);
+        padding: 10px 0;
+        background-color: #f2f2f2;
+        line-height: 1.6;
+        min-height: 75px;
+        color: #797979;
+      }
+      .slider_car{
+        align-items: center;
+      }
+      l2t-paper-slider{
+          min-height: 200px;
+          --paper-slide-height:200px;
+          --paper-slide-dot:#aba8a8;
+          --paper-slide-dot-selected:#fff;
+      }
+      paper-slide img{
+          width: 100%;
+          height:200px;
+      }    
+    </style>
+   
+    <div>
+      <div class="container">
+        <div class="header">
+          <!-- <div class="header-left" on-click="goBack">
+            <img src="../../../images/arrow.png" alt="" class="left-icon">
+          </div> -->
+          <div class="header-center">
+            <p class="center-text">車輛詳情</p>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="swipe-list">
+            <div class="swipe">
+              <!-- <img src="../../../images/u556.jpg" alt="" class="swipe-pic"> -->
+            <l2t-paper-slider auto-progress slide-duration="2" total-slides="[[imgUrlList.length]]">
+                <template is="dom-repeat" items="{{imgUrlList}}">
+                    <paper-slide>
+                      <img class="slider_car" src="{{item}}">
+                    </paper-slide>
+                </template>
+            </l2t-paper-slider>
+            </div>
+          </div>
+
+          <div class="car-detail">
+            <div class="detail-name">
+              <p class="name-text">{{data.brandName}}</p>
+            </div>
+            <div class="detail-time">
+              <!-- <p class="time-text">{{formatDate(data.createAt)}}</p> -->
+              <p class="price-text" style="width: 100%;
+    display: flex;
+    justify-content: flex-end;">底價 <span class="price-num" style="margin-left: 10px;"> {{abs(data.sellingPrice)}}</span></p>
+            </div>
+            <div class="detail-img">
+              <div class="download">點黎兜，快D黎參與靚車拍賣啦！</div>
+            </div>
+          </div>
+          <div class="configuration">
+            <div class="config-title">
+              <p class="title-text">配置</p>
+            </div>
+            <div class="config-body">
+              <div class="body-attr">
+                <span class="attr-name">位置</span>
+                <span class="attr-value">{{data.locationNumber}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">車類</span>
+                <span class="attr-value">{{data.typeName}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">車廠</span>
+                <span class="attr-value">{{data.brandName}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">型號</span>
+                <span class="attr-value">{{data.seriesName}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">座位</span>
+                <span class="attr-value">{{data.numberOfSeatName}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">容積</span>
+                <span class="attr-value">{{data.engineVolume}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">傳動</span>
+                <span class="attr-value">{{data.transmissionTypeName}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">年份</span>
+                <span class="attr-value">{{data.manufactureYear}}</span>
+              </div>
+              <div class="body-attr">
+                <span class="attr-name">里數</span>
+                <span class="attr-value">{{data.miles}}公里</span>
+              </div>
+            </div>
+          </div>
+          <div class="des">
+            <div class="des-title">
+              <p class="title-text">備註</p>
+            </div>
+            <div class="des-longtext">
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{data.additionalNote}}
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+<!-- 获取車輛詳情 -->
+      <iron-ajax
+        id="getDetail"
+        method="GET"
+        params="{{vehicleId}}"
+        url = "{{setUrl('public/vehicle/getVehicleDetails')}}"
+        Content-Type="application/json"
+        on-response="_responDetail">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerShare extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-share'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            observer: '_checkPage'
+          },
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      goBack(e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-starting"},bubbles: true, composed: true}));
+      }
+      _responDetail (e) {
+        let data = e.detail.response
+        this.data = data
+        this.imgUrlList = data.imgUrlList
+      }
+      _checkPage (val) {
+        if (val === 'seller-share') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let vehicleId = this.getViewParam().vehicleId
+            this.vehicleId = {
+              vehicleId: vehicleId
+            }
+            this.$.getDetail.generateRequest()
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+    }
+
+    window.customElements.define(SellerShare.is, SellerShare);
+  </script>
+</dom-module>

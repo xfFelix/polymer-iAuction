@@ -1,0 +1,103 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="admin-list-container">
+  <template>
+    <style>
+      .header{
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 10px;
+        align-items: center;
+      }
+      .title{
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .title ::slotted([slot=num]){
+        color : blue;
+      }
+      .feature{
+        display: flex;
+        align-items: center;
+      }
+      .feature>*{
+        padding-right: 10px;
+      }
+      .seach-img{
+        max-width: 30px;
+        max-height: 30px;
+        align-self: flex-end;
+        margin-bottom: 10px;
+        margin-right: 10px;
+        cursor: pointer;
+      }
+    </style>
+    <div class="header">
+      <div class="title">
+        <slot name="name"></slot>
+        <slot name="num"></slot>
+      </div>
+      <div class="feature">
+        <vaadin-text-field label="搜索車輛" type="search" value="{{selectSearch}}"></vaadin-text-field>
+        <img src="../../../../images/search.png" alt="" class="seach-img" on-click="searchList">
+        <vaadin-combo-box label="排序" items="{{sortItems}}" value="{{selectValue}}">
+        </vaadin-combo-box>
+      </div>
+    </div>
+    <slot></slot>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminListContainer extends Polymer.Element {
+      static get is() { return 'admin-list-container'; }
+      static get properties() {
+        return {
+          selectValue: {
+            type: String,
+          }
+        };
+      }
+      static get observers(){
+        return [
+          'checkValue(selectValue)'
+        ]
+      }
+      checkValue (sort) {
+          this.dispatchEvent(new CustomEvent('order', {detail:{order: sort, search: this.selectSearch},bubbles: true, composed: true}));
+      }
+      keypress (event) {
+        var x = event.which || event.keyCode;
+        if(x === 13){
+          this.checkValue(this.selectValue)
+        }
+      }
+      searchList () {
+        this.checkValue(this.selectValue)
+      }
+      ready() {
+        super.ready();
+        this.sortItems = [
+        {
+          label:"按價錢",value:"S1"
+        },
+        {
+          label:"按發布時間",value:"S2"
+        },
+        {
+          label:"按位置編號",value:"S3"
+        },
+        {
+          label:"按熱門",value:"S4"
+        }]
+      }
+
+    }
+
+    window.customElements.define(AdminListContainer.is, AdminListContainer);
+  </script>
+</dom-module>

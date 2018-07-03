@@ -1,0 +1,585 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<!-- 導入admin組件 -->
+<link rel="import" href="admin-ele/admin-toolbar.html">
+<link rel="import" href="admin-ele/admin-upload.html">
+
+<dom-module id="admin-car-detail">
+  <template>
+    <style>
+      vaadin-text-field , vaadin-combo-box{
+        width: 48%;
+        padding-right: 1%;
+      }
+      admin-upload{
+        width: 31%;
+        padding-right: 1%;
+        display: inline-block;
+      }
+      a{
+        color: #fff;
+        text-decoration: none;
+      }
+      .container{
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .carInfo,.media{
+        width: 49%;
+      }
+      /* .carInfo{
+
+      } */
+      .upload-container{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 8px;
+        background: #dddddd6e;
+      }
+      .addition-note{
+        width: 99%;
+        min-height: 250px;
+      }
+      .dialog-message {
+        font: italic 24px serif;
+        background: #fff;
+        color: #000;
+        padding: 1em;
+        border: .25em solid #000;
+      }
+    </style>
+    <admin-toolbar>
+      <a class="loginOut" on-click="goback">
+        << 返回
+      </a>
+      <div class="addCar" on-click="_saveVehicle">
+        保存
+      </div>
+    </admin-toolbar>
+    <div class="container">             
+      <section class="carInfo">
+        <h2 class="title">車輛資料</h2>
+        <vaadin-text-field label="姓名" value="{{vehicleDetail.ownerView.name}}" required></vaadin-text-field>
+        <vaadin-combo-box label="性別" items="[[sexList]]" item-label-path="name" item-value-path="uid" selected-item="{{sex}}" required></vaadin-combo-box>
+        <vaadin-text-field label="手機" value="{{vehicleDetail.ownerView.mobile}}" required></vaadin-text-field>
+        <vaadin-combo-box label="位置" items="[[parkingSlotNumberList]]" item-label-path="locationNumber" item-value-path="locationNumber" selected-item="{{parkingSlotNumber}}" required></vaadin-combo-box>
+        <vaadin-combo-box label="車類" items="[[vehicleTypeList]]" item-label-path="name" item-value-path="uid" selected-item="{{vehicleType}}" required></vaadin-combo-box>
+        <vaadin-combo-box label="車廠" items="[[carFactoryList]]" item-label-path="vehicleName" item-value-path="vehicleId" selected-item="{{carFactory}}" required></vaadin-combo-box>
+        <vaadin-text-field label="型號" value="{{vehicleDetail.seriesName}}" required></vaadin-text-field>
+        <vaadin-combo-box label="座位" items="[[seatTypeList]]" item-label-path="name" item-value-path="uid" selected-item="{{seatType}}" required></vaadin-combo-box>
+        <vaadin-text-field label="容積" value="{{vehicleDetail.engineVolume}}" required></vaadin-text-field>
+        <vaadin-combo-box label="傳動" items="[[vehicleTransmissionTypeList]]" item-label-path="name" item-value-path="uid" selected-item="{{vehicleTransmissionType}}" required></vaadin-combo-box>
+        <vaadin-text-field label="年份" value="{{vehicleDetail.manufactureYear}}" required></vaadin-text-field>
+        <vaadin-text-field label="里數" value="{{vehicleDetail.miles}}" required></vaadin-text-field>
+        <vaadin-text-field label="底價" value="{{vehicleDetail.sellingPrice}}" required></vaadin-text-field>
+      </section>
+      <section class="media">
+        <h2 class="title">圖片</h2>
+        <div class="upload-container">
+          <admin-upload on-view-success="getPicture1" img-src$="{{photo1}}" label$="{{photoText1}}"></admin-upload>
+          <admin-upload on-view-success="getPicture2" img-src$="{{photo2}}" label$="{{photoText2}}"></admin-upload>
+          <admin-upload on-view-success="getPicture3" img-src$="{{photo3}}" label$="{{photoText3}}"></admin-upload>
+          <admin-upload on-view-success="getPicture4" img-src$="{{photo4}}" label$="{{photoText4}}"></admin-upload>
+          <admin-upload on-view-success="getPicture5" img-src$="{{photo5}}" label$="{{photoText5}}"></admin-upload>
+          <admin-upload on-view-success="getPicture6" img-src$="{{photo6}}" label$="{{photoText6}}"></admin-upload>
+        </div>
+        <vaadin-text-area label="備註" class="addition-note" value="{{vehicleDetail.additionalNote}}"></vaadin-text-area>
+        <!-- <h2 class="title">備註</h2>
+        <textarea name="additionalNote" class="addition-note">{{vehicleDetail.additionalNote}}</textarea> -->
+      </section>
+    </div>
+    <!-- 车类列表 -->
+    <iron-ajax
+      id="getVehicleTypeList"
+      url="{{setUrl('admin/vehicleType')}}"
+      body="{}"
+      method="GET"
+      headers = "{{adminHeader}}"
+      Content-Type="application/json"
+      on-response="_responVehicleTypeList"></iron-ajax>
+      <!-- 座位列表 -->
+    <iron-ajax
+      id="getSeatTypeList"
+      url="{{setUrl('admin/seatType')}}"
+      body="{}"
+      method="GET"
+      headers = "{{adminHeader}}"
+      Content-Type="application/json"
+      on-response="_responSeatTypeList"></iron-ajax>
+       <!-- 傳動列表 -->
+    <iron-ajax
+      id="getVehicleTransmissionTypeList"
+      url="{{setUrl('admin/vehicleTransmissionType')}}"
+      body="{}"
+      method="GET"
+      headers = "{{adminHeader}}"
+      Content-Type="application/json"
+      on-response="_responVehicleTransmissionTypeList"></iron-ajax>
+      <!-- 车厂列表 -->
+      <iron-ajax
+        id="getFactoryList"
+        method="GET"
+        url = "{{setUrl('public/seller/allVehicle')}}"
+        Content-Type="application/json"
+        on-response="_responFactory">
+      </iron-ajax>
+      <!-- 性別列表 -->
+      <iron-ajax
+        id="getSexList"
+        method="GET"
+        url = "{{setUrl('public/seller/salutation')}}"
+        Content-Type="application/json"
+        on-response="_responSexList">
+      </iron-ajax>
+      <!-- 位置列表 -->
+      <iron-ajax
+        id="getParkingSlotNumberList"
+        method="GET"
+        headers = "{{adminHeader}}"
+        url = "{{setUrl('admin/vehicleParkingSlotNumber')}}"
+        Content-Type="application/json"
+        on-response="_responParkingSlotNumberList">
+      </iron-ajax>
+      <!-- 保存 -->
+      <iron-ajax
+        id="_savaVehicle"
+        method="POST"
+        headers = "{{adminHeader}}"
+        url = "{{setUrl('admin/addVehicle')}}"
+        Content-Type="application/json"
+        on-response="_responSave">
+      </iron-ajax>
+      <!-- 視頻上傳 -->
+      <iron-ajax
+        id="uploadFile"
+        method="POST"
+        headers = "{{adminHeader}}"
+        url = "{{setUrl('admin/uploadFile')}}"
+        Content-Type="multipart/form-data"
+        on-response="_responUpload">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminCarDetail extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-car-detail'; }
+      static get properties() {
+        return {
+          uid:{
+            type : String,
+          },
+          path :{
+            type : String
+          },
+          // 车辆详情
+          vehicleDetail: {
+            type: Object
+          },
+          // 车类列表
+          vehicleTypeList: {
+            type: Array
+          },
+          // 选中的车类对象
+          vehicleType: {
+            type: Object
+          },
+          // 座位列表
+          seatTypeList: {
+            type : Array
+          },
+          // 選中的座位對象
+          seatType: {
+            type: Object
+          },
+          // 傳動列表
+          vehicleTransmissionTypeList: {
+            type: Array
+          },
+          // 選中的傳動對象
+          vehicleTransmissionType: {
+            type : Object
+          },
+          // 车厂选项
+          carFactoryList: {
+            type: Array
+          },
+          // 选中的车厂
+          carFactory: {
+            type: Object
+          },
+          // 性別列表
+          sexList: {
+            type: Array
+          },
+          // 選中的性別對象
+          sex: {
+            type: Object
+          },
+          // 位置列表
+          parkingSlotNumberList: {
+            type: Array
+          },
+          // 選中的位置對象
+          parkingSlotNumber: {
+            type: Object
+          },
+          photoArr: {
+            type: Array,
+            value: []
+          }
+        }; 
+      }
+      static get observers(){
+        return [
+          '_checkUid(uid,path)'
+        ]
+      }
+      ready() {
+        super.ready();
+      }
+      /**
+       * 保存
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _saveVehicle (e) {
+        if (this.vehicleDetail) {
+          if (!this.vehicleDetail.sellingPrice || !this.parkingSlotNumber || !this.vehicleType || !this.carFactory || !this.vehicleDetail.seriesName || !this.seatType || !this.vehicleDetail.engineVolume || !this.vehicleTransmissionType || !this.vehicleDetail.manufactureYear || !this.vehicleDetail.miles || !this.vehicleDetail.ownerView || !this.sex) {
+        console.log(this.vehicleDetail.ownerView)
+            return this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請輸入所有資料！！！"},bubbles: true, composed: true}));
+          }
+        }
+        // 底价
+        let sellingPrice = this.vehicleDetail.sellingPrice
+        // 位置
+        let locationNumber = this.parkingSlotNumber.locationNumber
+        // 车类
+        let typeId = this.vehicleType.uid
+        // 车厂
+        let brandId = this.carFactory.vehicleId
+        // 型号
+        let seriesName = this.vehicleDetail.seriesName
+        // 座位
+        let numberOfSeat = this.seatType.uid
+        // 容积
+        let engineVolume = this.vehicleDetail.engineVolume
+        // 传动
+        let transmissionType = this.vehicleTransmissionType.uid
+        // 年份
+        let manufactureYear = this.vehicleDetail.manufactureYear
+        // 里数
+        let miles = this.vehicleDetail.miles
+        // 备注
+        let additionalNote = this.vehicleDetail.additionalNote
+        // 车主ID
+        this.$._savaVehicle.body = {
+          vehicleId: this.vehicleDetail.uid,
+          sellingPrice : sellingPrice,
+          locationNumber : locationNumber,
+          typeId : typeId,
+          brandId : brandId,
+          seriesName : seriesName,
+          numberOfSeat : numberOfSeat,
+          engineVolume : engineVolume,
+          transmissionType : transmissionType,
+          manufactureYear : manufactureYear,
+          miles : miles,
+          additionalNote : additionalNote,
+        }
+        if (this.vehicleDetail && this.vehicleDetail.ownerView && this.vehicleDetail.ownerView.uid) {
+          let ownerId = this.vehicleDetail.ownerView.uid
+          this.$._savaVehicle.body.ownerId = ownerId
+        } else {
+          let ownerUserName = this.vehicleDetail.ownerView.name
+          let salutation = this.sex.uid
+          let mobile = this.vehicleDetail.ownerView.mobile
+          this.$._savaVehicle.body.ownerUserName = ownerUserName
+          this.$._savaVehicle.body.salutation = salutation
+          this.$._savaVehicle.body.mobile = mobile
+        }
+        this.$._savaVehicle.generateRequest();
+      }
+      _responSave (e) {
+        let data = e.detail.response;
+        if (data.success) {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"保存成功，3秒後返回列表頁。"},bubbles: true, composed: true}));
+          setTimeout(()=> {
+            this.dispatchEvent(new CustomEvent('toastOut', {detail:{path:"/admin/admin-home"},bubbles: true, composed: true}));
+            this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/admin/admin-home"},bubbles: true, composed: true}));
+          }, 3000)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"保存失敗"},bubbles: true, composed: true}));
+        }
+      }
+      /**
+       * 车类列表 —— 回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responVehicleTypeList(e) {
+        this.vehicleTypeList = e.detail.response;
+      }
+      /**
+       * 座位列表 —— 回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responSeatTypeList(e) {
+        this.seatTypeList = e.detail.response;
+      }
+      /**
+       * 傳動列表 —— 回調
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responVehicleTransmissionTypeList(e) {
+        this.vehicleTransmissionTypeList = e.detail.response;
+      }
+      /**
+       * 获取车厂列表-回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responFactory (e) {
+        this.carFactoryList = e.detail.response
+      }
+      /**
+       * 性別列表 —— 回調
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responSexList(e) {
+        this.sexList = e.detail.response
+      }
+      /**
+       * 位置列表 —— 回調
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responParkingSlotNumberList(e) {
+        this.parkingSlotNumberList = e.detail.response
+      }
+      /**
+       * 图片上传的ajax
+       * @param  {[type]} form [description]
+       * @return {[type]}      [description]
+       */
+      uploadAjax (form) {
+        var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+        xhr.open("post", this.setUrl('admin/uploadFile'), true); 
+        xhr.setRequestHeader('X-ADMIN-USERNAME',adminHeader['X-USERNAME']);
+        xhr.setRequestHeader('X-CustomToken',adminHeader['X-CustomToken']);
+        xhr.onload = this.uploadComplete; //请求完成
+        xhr.send(form); //开始上传，发送form数据
+      }
+      /**
+       * 图片上传成功回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      uploadComplete(e) {
+        let jsonData = JSON.parse(e.target.response)
+        if (jsonData.success) {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"上傳成功"},bubbles: true, composed: true}));
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"系統出錯，請重新上傳"},bubbles: true, composed: true}));
+        }
+      }
+      getPicture1(e) {
+        if (this.vehicleDetail && this.vehicleDetail.uid) {
+          let form = new FormData();
+          form.append("file", e.detail.msg); // 文件对象
+          form.append("vehicleUid",this.vehicleDetail.uid);
+          form.append("no",1);
+          this.uploadAjax(form)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請先登記"},bubbles: true, composed: true}));
+        }
+      }
+      getPicture2(e) {
+        if (this.vehicleDetail && this.vehicleDetail.uid) {
+          let form = new FormData();
+          form.append("file", e.detail.msg); // 文件对象
+          form.append("vehicleUid",this.vehicleDetail.uid);
+          form.append("no",2);
+          this.uploadAjax(form)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請先登記"},bubbles: true, composed: true}));
+        }
+      }
+      getPicture3(e) {
+        if (this.vehicleDetail && this.vehicleDetail.uid) {
+          let form = new FormData();
+          form.append("file", e.detail.msg); // 文件对象
+          form.append("vehicleUid",this.vehicleDetail.uid);
+          form.append("no",3);
+          this.uploadAjax(form)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請先登記"},bubbles: true, composed: true}));
+        }
+      }
+      getPicture4(e) {
+        if (this.vehicleDetail && this.vehicleDetail.uid) {
+          let form = new FormData();
+          form.append("file", e.detail.msg); // 文件对象
+          form.append("vehicleUid",this.vehicleDetail.uid);
+          form.append("no",4);
+          this.uploadAjax(form)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請先登記"},bubbles: true, composed: true}));
+        }
+      }
+      getPicture5(e) {
+        if (this.vehicleDetail && this.vehicleDetail.uid) {
+          let form = new FormData();
+          form.append("file", e.detail.msg); // 文件对象
+          form.append("vehicleUid",this.vehicleDetail.uid);
+          form.append("no",5);
+          this.uploadAjax(form)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請先登記"},bubbles: true, composed: true}));
+        }
+      }
+      getPicture6(e) {
+        if (this.vehicleDetail && this.vehicleDetail.uid) {
+          let form = new FormData();
+          form.append("file", e.detail.msg); // 文件对象
+          form.append("vehicleUid",this.vehicleDetail.uid);
+          form.append("no",6);
+          this.uploadAjax(form)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"請先登記"},bubbles: true, composed: true}));
+        }
+      }
+      // 獲取詳情
+      _checkUid(id,path){
+        // 判讀是否詳情頁
+        if(path == "admin-car-detail"){
+          let uid = JSON.parse(localStorage.addVehicleDetail).uid
+          this.$.getParkingSlotNumberList.params={
+            vehicleId: uid
+          }
+          Promise.all([this.$.getVehicleTypeList.generateRequest().completes, 
+            this.$.getSeatTypeList.generateRequest().completes, 
+            this.$.getVehicleTransmissionTypeList.generateRequest().completes,
+            this.$.getFactoryList.generateRequest().completes, 
+            this.$.getSexList.generateRequest().completes,
+            this.$.getParkingSlotNumberList.generateRequest().completes]).then(values => {
+              this.photoText1 = '外觀圖1'
+              this.photoText2 = '外觀圖2'
+              this.photoText3 = '外觀圖3'
+              this.photoText4 = '內飾1'
+              this.photoText5 = '內飾2'
+              this.photoText6 = '視頻'
+              if (localStorage.addVehicleDetail) {
+                this.vehicleDetail = JSON.parse(localStorage.addVehicleDetail)
+                if (this.vehicleDetail.imgUrlList[0]) {
+                  this.photo1 = this.vehicleDetail.imgUrlList[0]
+                } else {
+                  this.photo1 = '/images/u267.jpg'
+                }
+                if (this.vehicleDetail.imgUrlList[1]) {
+                  this.photo2 = this.vehicleDetail.imgUrlList[1]
+                } else {
+                  this.photo2 = '/images/u276.jpg'
+                }
+                if (this.vehicleDetail.imgUrlList[2]) {
+                  this.photo3 = this.vehicleDetail.imgUrlList[2]
+                } else {
+                  this.photo3 = '/images/u285.jpg'
+                }
+                if (this.vehicleDetail.imgUrlList[3]) {
+                  this.photo4 = this.vehicleDetail.imgUrlList[3]
+                } else {
+                  this.photo4 = '/images/u294.png'
+                }
+                if (this.vehicleDetail.imgUrlList[4]) {
+                  this.photo5 = this.vehicleDetail.imgUrlList[4]
+                } else {
+                  this.photo5 = '/images/u303.png'
+                }
+                if (this.vehicleDetail.imgUrlList[5]) {
+                  this.photo6 = this.vehicleDetail.imgUrlList[5]
+                } else {
+                  this.photo6 = '/images/u2678.png'
+                }
+                for (let i of this.sexList) {
+                  if (this.vehicleDetail.ownerView.salutation === i.uid) {
+                    this.sex = i
+                    break;
+                  }
+                }
+                for (let i of this.parkingSlotNumberList) {
+                  if (this.vehicleDetail.locationNumber === i.locationNumber) {
+                    this.parkingSlotNumber = i
+                    break;
+                  }
+                }
+                for (let i of this.carFactoryList) {
+                  if (this.vehicleDetail.brandId === i.vehicleId) {
+                    this.carFactory = i
+                    break;
+                  }
+                }
+                for (let i of this.vehicleTransmissionTypeList) {
+                  if (this.vehicleDetail.transmissionType === i.uid) {
+                    this.vehicleTransmissionType = i
+                    break;
+                  }
+                }
+                for (let i of this.seatTypeList) {
+                  if (this.vehicleDetail.numberOfSeat === i.uid) {
+                    this.seatType = i
+                    break;
+                  }
+                }
+                for (let i of this.vehicleTypeList) {
+                  if (this.vehicleDetail.typeId === i.uid) {
+                    this.vehicleType = i
+                    break;
+                  }
+                }
+              } else {
+                this.vehicleDetail = {ownerView: {}, imgUrlList: []}
+                this.photo1 = '/images/u267.jpg'
+                this.photo2 = '/images/u276.jpg'
+                this.photo3 = '/images/u285.jpg'
+                this.photo4 = '/images/u294.png'
+                this.photo5 = '/images/u303.png'
+                this.photo6 = '/images/u2678.png'
+                this.vehicleType =null
+                this.seatType = null
+                this.vehicleTransmissionType = null
+                this.carFactory = null
+                this.parkingSlotNumber = null
+                this.sex = null
+              }
+            })
+        }
+
+      }
+      goback (e) {
+        localStorage.removeItem('addVehicleDetail');
+        new Promise((resolve,reject) => {
+          if (!localStorage.addVehicleDetail) {
+            resolve()
+          }
+        }).then(res =>{
+          this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/admin/admin-home"},bubbles: true, composed: true}));
+        })
+      }
+      ready(){
+        super.ready();
+
+      }
+
+    }
+
+    window.customElements.define(AdminCarDetail.is, AdminCarDetail);
+  </script>
+</dom-module>

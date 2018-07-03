@@ -1,0 +1,127 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+<link rel="import" href="../components/no-data.html">
+
+<dom-module id="register-history">
+  <template>
+    <style include="comment-styles">
+      .message-list{
+        width: 95%;
+      }
+      .message-list .message .message-main{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .message-list .message .message-time{
+        color: #797979;
+      }
+      .message-list .message .message-time .time-text{
+        margin-bottom: 0;
+      }
+      .message-list .message .message-main .main-name{
+        font-size: 17px;
+        font-weight: bold;
+        margin: 5px 0;
+      }
+      .message-list .message .message-main .main-price{
+        margin-right: 5px;
+        color: #FF0000;
+        font-weight: bold;
+      }
+    </style>
+    <register-header title="上周拍賣記錄" is-back="{{isBack}}"></register-header>
+    <div>
+        <div id="container">
+            <template is="dom-if" if="{{checkSize(personList.length)}}">
+                <div style="display: flex;justify-content: center;align-items: center;">
+                    <div class="message-list">
+                        <template is="dom-repeat" items="{{personList}}">
+                            <div class="message">
+                                <div class="message-time">
+                                    <p class="time-text">{{formatDate(item.createAt)}}</p>
+                                </div>
+                                <div class="message-main">
+                                    <p class="main-name">買家</p>
+                                    <span class="main-price">{{abs(item.bidPrice)}}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <template is="dom-if" if="{{!checkSize(personList.length)}}">
+                <no-data></no-data>
+            </template>
+        </div>
+
+    </div>
+    <!-- 获取历史记录 -->
+    <iron-ajax
+        id="getList"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/getVehiclePriceHistory')}}"
+        Content-Type="application/json">
+    </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterHistory extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-history'; }
+      static get properties() {
+        return {
+            isBack: {
+                type: Boolean,
+                value: true
+            },
+            route: {
+                type: String,
+                observer: 'checkRoute'
+            },
+            vehicleId: {
+                type: String,
+                value: JSON.parse(localStorage.vehicleId) || ''
+            }
+        };
+      }
+      static get observers(){
+        return [
+            
+        ]
+      }
+      async checkRoute (route) {
+        if (route === 'register-history') {
+            if (window.location.toString().indexOf('?') != -1) {
+                let st = this.getViewParam().st
+                token['st'] = st
+                this.st = st
+                this.$.getList.body = {
+                    vehicleId: JSON.parse(localStorage.vehicleId)
+                }
+                let res = await this.$.getList.generateRequest().completes
+                this.personList = res.response.ownerVehiclePriceHistoriesResponseViewList
+            } else {
+                this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+            }
+        }
+      }
+      checkSize (val) {
+          if (val) {
+              return true
+          } else {
+              return false
+          }
+      }
+    }
+
+    window.customElements.define(RegisterHistory.is, RegisterHistory);
+  </script>
+</dom-module>

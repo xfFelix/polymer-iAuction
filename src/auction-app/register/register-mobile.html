@@ -1,0 +1,250 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="register-mobile">
+  <template>
+    <style include = "shared-styles">
+      #button2 {
+        font-size: 20px;
+        height: 35px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: auto;
+        margin-left: 10px;
+    width: 80px;
+      }
+      .section {
+        align-items: center;
+        font-size: 20px;
+        justify-content: center;
+      }
+      .input2{
+        width: auto;
+        min-width: 30%;
+      }
+      #button{
+        position: static;
+        margin-top: 230px;
+      }
+    </style>
+   
+    <div>
+      <div id="container">
+      <img class="header_img" src="../../../images/banner.jpg"/>
+
+      <div id="step">
+        <div class="ball">1</div>
+        <div class="ball_active">2</div>
+        <div class="ball">3</div>
+      </div>
+
+      <h4 style="margin-left: 10px;">是否發送驗證碼到您手提{{register.mobile}}？請注意號碼填寫無誤，否則無法接收短訊！</h4>
+      <div class="section">
+        <div style="margin-left: 10px;font-size: 14px;">
+          驗證碼：<vaadin-text-field class="input2" value="{{smsAccessCode}}">
+          </vaadin-text-field>
+          <div id="button2" on-click="getSmsCode" disabled="{{smsButtonDisabled}}">{{getSMScodeLabel}}</div>
+        </div>
+
+      
+      </div>
+      <div id="button" on-click="goNext">提交</div>
+      </div>
+
+    </div>
+    <!-- 保存客户信息 -->
+    <iron-ajax
+        id="getSmsCode"
+        method="POST" headers="{{header}}"
+        body="{}"
+        url = "{{setUrl('public/seller/requestSMS')}}"
+        Content-Type="application/json">
+    </iron-ajax>
+    <!-- 验证smsCode -->
+    <iron-ajax
+        id="checkSmsCode"
+        method="POST"
+        body="{}"
+        url = "{{setUrl('public/seller/checkSmsCode')}}"
+        Content-Type="application/json">
+    </iron-ajax>
+    <!-- 验证登记 -->
+      <iron-ajax
+        id="checkRegister"
+        method="POST"
+        url = "{{setUrl('public/seller/registration')}}"
+        Content-Type="application/json"
+        handle-as="json">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterMobile extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-mobile'; }
+      static get properties() {
+        return {
+          // 登记信息
+          register: {
+            type: Object
+          },
+          // 当前路由
+          subRoute:{
+            type : String,
+            observer: '_checkPage'
+          },
+          // 验证码
+          smsAccessCode: {
+            type : String,
+            observer: 'checkNum'
+          },
+          // 发送验证码按钮 内容
+          getSMScodeLabel:{
+            type: String,
+            value: '發送'
+          },
+          // 禁止发送
+          smsButtonDisabled: {
+            type: Boolean,
+            value : false
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      checkNum (val) {
+        var reg = new RegExp("^[0-9]*$");
+        if (!reg.test(val)) {
+          return this.smsAccessCode = ''
+        }
+      }
+      /**
+       * 页面验证和数据获取
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _checkPage (e) {
+        if (e === 'register-mobile') {
+          this.register = JSON.parse(sessionStorage.register)
+        }
+      }
+      /**
+       * 获取验证码
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      getSmsCode (e) {
+        let mobile = this.register.mobile
+        let secCount = 60;
+        if(mobile && !this.smsButtonDisabled){
+            this.$.getSmsCode.body = {
+                "mobile": mobile
+            };
+            this.$.getSmsCode.generateRequest().completes.then(res => {
+              if (!res.response.success) {
+                this.smsButtonDisabled = false;
+                return this.dispatchEvent(new CustomEvent('toast', {detail:{msg:res.response.failedReason},bubbles: true, composed: true}));
+              }
+              var timeCount = setInterval(() => {
+                  if(secCount > 0){
+                      --secCount;
+                      this.getSMScodeLabel = secCount + "s";
+                  }else{
+                      window.clearInterval(timeCount);
+                      this.getSMScodeLabel = "獲取";
+                      this.smsButtonDisabled = false;
+                  }
+              },1000);
+            })
+            this.smsButtonDisabled = true;
+        }
+      }
+      /**
+       * 下一步 按钮
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      goNext(e) {
+        if (!this.smsAccessCode) {
+          return this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"驗證失敗,請重新輸入"},bubbles: true, composed: true}));
+        } else {
+          this.$.checkSmsCode.body = {
+            mobile: this.register.mobile,
+            smsCode: this.smsAccessCode
+          }
+          this.$.checkSmsCode.generateRequest().completes.then(val => {
+            if (val.response.success) {
+              this.register.smsAccessCode = this.smsAccessCode
+              new Promise((resolve,reject) => {
+                sessionStorage.register = JSON.stringify(this.register)
+                let data = JSON.parse(sessionStorage.register)
+                if (data) {
+                  resolve(data)
+                } else {
+                  reject(err)
+                }
+              }).then(res => {
+                this.submitData()
+                // this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-pay"},bubbles: true, composed: true}));
+              }).catch(err => {
+                console.error(error)
+              })
+            } else {
+              return this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"驗證碼錯誤"},bubbles: true, composed: true}));
+            }
+          })
+          
+        }
+      }
+      submitData () {
+        new Promise((resolve,reject) => {
+            sessionStorage.register = JSON.stringify(this.register)
+            let data = JSON.parse(sessionStorage.register)
+            if (data) {
+              resolve(data)
+            } else {
+              reject(err)
+            }
+          }).then(data => {
+            // js验证
+            data.reserveDate1 = Number(data.reserveDate1)
+            this.$.checkRegister.body = data
+            this.$.checkRegister.body.paymentType = '1'
+            this.$.checkRegister.generateRequest().completes.then(res => {
+              if (res.response.isSuccess) {
+                  this.register.qrCodeByte = res.response.qrCodeByte
+                  sessionStorage.register = JSON.stringify(this.register)
+                  new Promise((resolve2, reject2) => {
+                    let data2 = JSON.parse(sessionStorage.register);
+                    if (data2) {
+                      resolve2(data2)
+                    } else {
+                      reject2(data2)
+                    }
+                  }).then(res2 =>{
+                    this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-success"},bubbles: true, composed: true}));
+                  })
+              } else {
+                this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"验证失败"},bubbles: true, composed: true}));
+              }
+            })
+          }).catch(err => {
+            console.error(err)
+          })
+      }
+      ready() {
+        super.ready();
+      }
+
+    }
+
+    window.customElements.define(RegisterMobile.is, RegisterMobile);
+  </script>
+</dom-module>

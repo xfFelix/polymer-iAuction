@@ -1,0 +1,206 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-pay">
+  <template>
+    <style include = "comment-styles">
+      #button{
+        bottom: 20px;
+        position: static;
+        margin-top: 100px;
+      }
+      .list{
+        width: 90%;
+        margin: auto;
+      }
+      #button{
+        position: fixed;
+        bottom: 50px;
+        left: 5%;
+      }
+      .list-right{
+        font-family: PingFangTC-Regular;
+        font-size: 12px;
+        color: #9B9B9B;
+        letter-spacing: 0.4px;
+      }
+    </style>
+   
+    <div>
+      <register-header title="支付拍賣費" is-back="{{isBack}}"></register-header>
+      <div class="list">
+      <div class="list_left">
+        <label>
+          <input class="input4" type="radio" name="payment" value="1"/>
+          <img src="../../../images/alipay.png"/>
+        </label>
+      </div>
+
+      <div class="list_right">
+      <div class="price" style="margin-top: 10px;">$100</div></div>
+      </div>
+
+
+      <div class="list">
+      <div class="list_left">
+        <label>
+          <input class="input4" type="radio" name="payment" value="2"/>
+          <img src="../../../images/paypal.png"/>
+        </label>
+      </div>
+
+      <div class="list_right">
+      <div class="price" style="margin-top: 10px;">$100</div></div>
+      </div>
+
+      <!-- <div class="list">
+          <div class="list_left">
+              <label>
+                  <input class="input4" type="radio" name="payment" value="3"/>
+                  <div class="walkin">到現場支付</div>
+              </label>
+          </div>
+          <div class="list_right">
+            正價
+            <div class="price2">$699</div>
+          </div>
+        </div> -->
+
+
+
+      <div id="button" on-click="goNext">確認</div>
+
+    </div>
+    <!--  -->
+    <div class="payAliyunForm" id="payAliyunForm" style="display: none;"></div>
+
+      <!-- paypal -->
+      <iron-ajax
+        id="getPaypal"
+        method="POST"
+        headers= "{{token}}"
+        url = "{{setUrl('payment/createPaypalPageAfterAuction')}}"
+        Content-Type="application/json"
+        handle-as="text"
+        on-response="responsePay">
+      </iron-ajax>
+      <!-- 支付寶支付 -->
+      <iron-ajax
+        id="payAliyunMoney"
+        method="POST"
+        headers= "{{token}}"
+        url = "{{setUrl('payment/createAliPayPageAfterAuction')}}"
+        Content-Type="application/json"
+        body="{}"
+        handle-as="text">
+      </iron-ajax>
+      <!-- 现场支付 -->
+      <!-- <iron-ajax
+        id="payNow"
+        method="POST"
+        url = "{{setUrl('payment/completePaymentOnSite')}}"
+        Content-Type="application/json"
+        body="{}"
+        handle-as="json">
+      </iron-ajax> -->
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerPay extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-pay'; }
+      static get properties() {
+        return {
+          // 登记信息
+          register: {
+            type: Object
+          },
+          // 当前路由
+          route:{
+            type : String,
+            observer: '_checkPage'
+          },
+          // 支付方式
+          paymentType: {
+            type: String
+          },
+          isBack: {
+            type: Boolean,
+            value: true
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      /**
+       * 页面验证和数据获取
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      async _checkPage (e) {
+        if (e === 'seller-pay') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.st = st
+            this.vehicleId = await JSON.parse(localStorage.vehicleId)
+            this.recordId = await JSON.parse(localStorage.recordId)
+            this.$.getPaypal.body = {
+              bidPriceHistoryUid: this.recordId,
+              st: this.st,
+              vehicleId: this.vehicleId
+            }
+            this.$.getPaypal.generateRequest()
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+      ready() {
+        super.ready();
+      }
+      responsePay (e) {
+        let data = e.detail.response
+        this.$.payAliyunForm.innerHTML = data
+      }
+      /**
+       * 下一步 button
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      async goNext(e) {
+        let targetList = this.shadowRoot.querySelectorAll('.input4')
+        for (var target of targetList) {
+          if (target.checked) {
+            this.paymentType = target.value
+          }
+        }
+        if(this.paymentType == 1) {
+          this.$.payAliyunMoney.body = {
+            bidPriceHistoryUid: this.recordId,
+            st: this.st,
+            vehicleId: this.vehicleId
+          }
+          this.$.payAliyunMoney.generateRequest().completes.then(res => {
+            let aliyunform = res.response
+            this.$.payAliyunForm.innerHTML = aliyunform
+            document.querySelector('body').append(this.$.payAliyunForm);
+            document.forms['alipaysubmit'].submit();
+          })
+        } else if (this.paymentType == 2) {
+          this.shadowRoot.querySelector('form').submit()
+        } else {
+          return this.dispatchEvent(new CustomEvent('confirm', {detail:{msg:"支付方式不能为空"},bubbles: true, composed: true}));
+        }
+      }
+    }
+
+    window.customElements.define(SellerPay.is, SellerPay);
+  </script>
+</dom-module>

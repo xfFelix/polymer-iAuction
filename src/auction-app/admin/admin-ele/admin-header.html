@@ -1,0 +1,55 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="admin-header">
+  <template>
+    <style>
+      #header{
+        text-align: center;
+        background-color: var(--app-header-color);
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        @apply --box-shadow;
+      }
+      .logo{
+        width: 200px;
+      }
+      .logo img{
+        width: 100%;
+        height: auto;
+      }
+    </style>
+
+    <header id="header">
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+    </header><!-- /header -->
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminHeader extends Polymer.Element {
+      static get is() { return 'admin-header'; }
+      static get properties() {
+        return {
+          
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+
+    }
+
+    window.customElements.define(AdminHeader.is, AdminHeader);
+  </script>
+</dom-module>

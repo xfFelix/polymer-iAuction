@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, initial-scale=1, user-scalable=no">
+
+    <title>auction</title>
+    <meta name="description" content="seller owner app">
+
+    <!-- See https://goo.gl/OOhYW5 -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+    <style>
+      html{
+        height: 100%;
+        box-sizing: border-box;
+      }
+      body{
+        margin: 0;
+        padding: 0;
+        min-width: 100%;
+        min-height: 100%;
+        height: 100%;
+      }
+    </style>
+    <script>
+      // 全局變量
+      var adminHeader = {
+        'X-CustomToken': '',
+        'X-ADMIN-USERNAME': ''
+      }
+      var sellerHeader = {
+        'X-CustomToken': '',
+        'X-SELLER-USERNAME': ''
+      }
+      var token ={
+        'st' : '',
+        'X-DEBUG': 'DEBUG'
+      }
+      // const baseUrl = '/iAuction/';
+      const baseUrl = 'https://auction.ilinkedtech.com/iAuction/';
+      // const baseUrl = 'http://192.168.31.103:8081/iAuction/';
+    </script>
+    <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+
+    <link rel="import" href="/src/auction-app/auction-app.html">
+  </head>
+  <body>
+    <auction-app></auction-app>
+  </body>
+</html>

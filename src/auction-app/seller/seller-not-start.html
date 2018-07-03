@@ -1,0 +1,236 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-not-start">
+  <template>
+    <style include = "shared-styles">
+      .container{
+        box-sizing: border-box;
+      }
+      .header{
+        width: 100%;
+        background-color: rgba(204, 0, 0, 1);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .header-left {
+        position: absolute;
+        left: 15px;
+      }
+      .header-center .center-logo{
+        transform: scale(0.7,0.7);
+      }
+      .content{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      .content .content-text p{
+        text-align: center;
+      }
+      .content .content-text .text-hint{
+        font-size: 20px;
+        font-weight: bold;
+      }
+      .content .content-text .text-time{
+        font-size: 20px;
+        font-weight: bold;
+        color: #FF9966;
+      }
+      .footer {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-top: 100px;
+      }
+      .uploadPic{
+        width: 90%;
+        /* text-align: center; */
+        border: 1px solid;
+        height: 45px;
+        /* margin: auto; */
+        background-color: #ff9966;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Arial Negreta', 'Arial Normal', 'Arial';
+        font-weight: 700;
+        font-style: normal;
+        font-size: 18px;
+        color: #ffffff;
+        border-radius: 10px;
+      }
+      .qrcode{
+        width: 90%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Arial Negreta', 'Arial Normal', 'Arial';
+        font-weight: 700;
+        font-style: normal;
+        font-size: 18px;
+        color: #ffffff;
+        border-radius: 10px;
+        background-color: #ff9966;
+        height: 45px;
+      }
+    </style>
+   
+    <div>
+      <div class="container">
+        <div class="header">
+          <!-- <div class="header-left">
+            <img src="../../../images/arrow.png" alt="" class="left-icon">
+          </div> -->
+          <div class="header-center">
+            <img src="../../../images/u342.png" alt="" class="center-logo">
+          </div>
+        </div>
+        <div class="content">
+          <div class="content-text">
+            <p class="text-hint">拍卖即将开始，敬请留意！</p>
+            <p id="time" class="text-time">{{time}}</p>
+          </div>
+          <div class="content-img">
+            <img src="../../../images/Bitmap.jpg" alt="" class="img-big">
+          </div>
+        </div>
+        <!-- <div class="footer">
+          <template is="dom-if" if="{{checkPayment(paymentType)}}">
+            
+          <div class="qrcode" on-click="goPayment">支付</div>
+          </template>
+          <div class="uploadPic" style="margin-top: 12px;" on-click="goUpload">上傳相片</div>
+          <div class="qrcode" on-click="goQRCode">查看登記資料卡</div>
+        </div> -->
+      </div>
+    </div>
+    <!-- 获取倒计时 -->
+      <iron-ajax
+        id="getSystemSetting"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/systemSetting')}}"
+        Content-Type="application/json"
+        on-response="_responSystemSetting">
+      </iron-ajax>
+      <!-- 獲取支付狀態 -->
+      <iron-ajax
+        id="getPayment"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/getOwnerPaymentDetails')}}"
+        Content-Type="application/json"
+        on-response="_responPayment">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerNotStart extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-not-start'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            observer: '_checkPage'
+          },
+          time : {
+            type: String,
+            // value: '00:00:00'
+            observer: '_checkTime'
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      checkPayment (val) {
+        if (val == '1') {
+          return true
+        } else {
+          return false
+        }
+      }
+      _responPayment (e) {
+        let data = e.detail.response
+        this.paymentType = data.paymentType
+      }
+      _checkPage (val) {
+        if (val === 'seller-not-start') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.$.getPayment.generateRequest()
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+          this.$.getSystemSetting.generateRequest();
+        }
+      }
+      _checkTime (val) {
+        if (val === '00:00:00') {
+          this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-starting"},bubbles: true, composed: true}));
+        }
+      }
+      goUpload (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-upload-picture"},bubbles: true, composed: true}));
+      }
+      goQRCode (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-qrcode"},bubbles: true, composed: true}));
+      }
+      goPayment (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/register/register-pay"},bubbles: true, composed: true}));
+      }
+      _responSystemSetting(e) {
+        let data = e.detail.response
+        this.getCountDown(data.auctionStartDate)
+      }
+      getCountDown(timestamp){
+        let that = this
+        setInterval(function(){
+            var nowTime = new Date();
+            var endTime = new Date(timestamp);
+
+            var t = endTime.getTime() - nowTime.getTime();
+            if (t <= 0) {
+              return that.time = '00:00:00'
+            }
+//            var d=Math.floor(t/1000/60/60/24);
+            var hour=Math.floor(t/1000/60/60%24);
+               var min=Math.floor(t/1000/60%60);
+               var sec=Math.floor(t/1000%60);
+
+            if (hour < 10) {
+                 hour = "0" + hour;
+            }
+            if (min < 10) {
+                 min = "0" + min;
+            }
+            if (sec < 10) {
+                 sec = "0" + sec;
+            }
+            var countDownTime = hour + ":" + min + ":" + sec;
+            that.time = countDownTime
+        },1000);
+      }
+      ready() {
+        super.ready()
+      }
+    }
+
+    window.customElements.define(SellerNotStart.is, SellerNotStart);
+  </script>
+</dom-module>

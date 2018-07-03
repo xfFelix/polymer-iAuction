@@ -1,0 +1,117 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="admin-owner-detail">
+  <template>
+    <style include = "shared-styles">
+      .content{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+     .person,.car{
+      width: 90%;
+      display: flex;
+      justify-content: space-between;
+     }
+     .img-list{
+      display: flex;
+      justify-content: center;
+     }
+     .img-car{
+      width: 200px;
+      height: 200px;
+      margin-right: 30px;
+     }
+    </style>
+   <div>
+     <h2>車主資料</h2>
+    <div class="content">
+      <h3>車主信息</h3>
+      <div class="person">
+        <vaadin-text-field label="姓名" value="{{personData.name}}" required readonly></vaadin-text-field>
+        <vaadin-text-field label="手機" value="{{personData.mobile}}" required readonly></vaadin-text-field>
+        <vaadin-text-field label="Email" value="{{personData.email}}" required readonly></vaadin-text-field>
+      </div>
+      <div class="person">
+        <vaadin-text-field label="預約日期" value="{{personData.reserveDate1}}" required readonly></vaadin-text-field>
+        <vaadin-text-field label="付款方法" value="{{payText}}" required readonly></vaadin-text-field>
+      </div>
+      <h3>車輛信息</h3>
+      <div class="car">
+        <vaadin-text-field label="車廠" value="{{carData.brandId}}" required readonly></vaadin-text-field>
+        <vaadin-text-field label="型號" value="{{carData.seriesName}}" required readonly></vaadin-text-field>
+        <vaadin-text-field label="車牌" value="{{personData.vehicleLicense}}" required readonly></vaadin-text-field>
+      </div>
+      <h3>圖片</h3>
+      <div class="img-list">
+        <img src="../../../images/u556.jpg" alt="" class="img-car">
+        <img src="../../../images/u556.jpg" alt="" class="img-car">
+        <img src="../../../images/u556.jpg" alt="" class="img-car">
+        <img src="../../../images/u556.jpg" alt="" class="img-car">
+        <img src="../../../images/u556.jpg" alt="" class="img-car">
+
+      </div>
+    </div>
+   </div>
+   <!-- 獲取列表 -->
+    <iron-ajax
+      id="getDetail"
+      url="{{setUrl('admin/getOwnerByMobile')}}"
+      body="{}"
+      method="POST"
+      headers = "{{adminHeader}}"
+      Content-Type="application/json"
+      on-response="_responDetail"></iron-ajax>
+     
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminOwnerDetail extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-owner-detail'; }
+      static get properties() {
+        return {
+          path : {
+            type : String,
+            observer : "_checkPath"
+          },
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      _responDetail (e) {
+        this.personData = e.detail.response
+        if (this.personData.paymentType === 'A') {
+          this.payText = '現場支付($600)'
+        } else if (this.personData.paymentType === 'B') {
+          this.payText = '支付寶支付($400)'
+        } else{
+          this.payText = 'Paypal支付($400)'
+        }
+        this.carData = this.personData.ownerVehicleResponseViewList[0]
+      }
+      // 檢查頁面
+      _checkPath (path){
+        if(path == "admin-owner-detail"){
+          if (sessionStorage.mobile) {
+            let mobile = JSON.parse(sessionStorage.mobile)
+            this.$.getDetail.body = {
+              mobile : mobile
+            }
+            this.$.getDetail.generateRequest()
+          }
+        }
+      }
+
+    }
+
+    window.customElements.define(AdminOwnerDetail.is, AdminOwnerDetail);
+  </script>
+</dom-module>

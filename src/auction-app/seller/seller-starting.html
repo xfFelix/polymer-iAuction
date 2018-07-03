@@ -1,0 +1,298 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-starting">
+  <template>
+    <style include = "shared-styles">
+      .container{
+        box-sizing: border-box;
+      }
+      .header{
+        width: 100%;
+        background-color: rgba(204, 0, 0, 1);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .header-left {
+        position: absolute;
+        left: 15px;
+      }
+      .header-center .center-logo{
+        transform: scale(0.7,0.7);
+      }
+
+      .content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .content .content-time{
+        background-color: #f7a700;
+        width: 100%;
+      }
+      .content .content-time p{
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        color: #FFFFFF;
+      }
+      .content .content-car .car-name{
+        font-size: 15px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .content .content-car .car-options{
+        text-align: center;
+        color: #797979;
+      }
+      .content .content-problem{
+        color: #FF9966;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .content .content-problem .problem-button{
+        border: 1px solid #FF9966;
+        width: 40%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .content .content-problem .problem-button .button-text{
+        text-align: center;
+      }
+      .content .content-problem .problem-button .button-num{
+        width: 20px;
+        border: 1px solid blue;
+        border-radius: 50%;
+        margin-left: 7px;
+        background: #0a0ac2;
+        text-align: center;
+      }
+      
+      .message-list{
+        width: 95%;
+      }
+      .message-list .message .message-main{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .message-list .message .message-time{
+        color: #797979;
+      }
+      .message-list .message .message-time .time-text{
+        margin-bottom: 0;
+      }
+      .message-list .message .message-main .main-name{
+        font-size: 17px;
+        font-weight: bold;
+      }
+      .message-list .message .message-main .main-price{
+        margin-right: 5px;
+        color: #FF0000;
+        font-weight: bold;
+      }
+      .noData {
+        color: #797979;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        font-size: 22px;
+      }
+    </style>
+   
+    <div>
+      <div class="container">
+
+        <div class="header">
+          <!-- <div class="header-left">
+            <img src="../../../images/arrow.png" alt="" class="left-icon">
+          </div> -->
+          <div class="header-center">
+            <img src="../../../images/u342.png" alt="" class="center-logo">
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="content-time">
+            <p class="time-text">距离拍卖结束还有:&nbsp; {{time}}</p>
+          </div>
+          <div class="content-car" on-click="goCarDetail" style="cursor: pointer;">
+            <p class="car-name">{{data.vehicleBrandDescriptionCn}} {{data.vehicleBrandDescriptionEn}}</p>
+            <p class="car-options">{{data.vehicleSeriesDescription}}</p>
+          </div>
+          <div class="content-problem">
+            <template is="dom-if" if="{{checkSize(data.pendingAnswerQuestionSize)}}">
+              <div class="problem-button" on-click="goAnswer">
+                <p class="button-text">解答买家问题</p>
+                <div class="button-num">{{data.pendingAnswerQuestionSize}}</div>
+              </div>
+            </template>
+            <template is="dom-if" if="{{!checkSize(data.pendingAnswerQuestionSize)}}">
+              <div class="problem-button">
+                <p class="button-text">暫無買家問題</p>
+              </div>
+            </template>
+          </div>
+        </div>
+        <template is="dom-if" if="{{checkNum(personList.length)}}">
+          <div style="display: flex;justify-content: center;align-items: center;">
+            <div class="message-list">
+              <template is="dom-repeat" items="{{personList}}">
+                <div class="message">
+                  <div class="message-time">
+                    <p class="time-text">{{formatDate(item.createAt)}}</p>
+                  </div>
+                  <div class="message-main">
+                    <p class="main-name">{{item.buyerName}}</p>
+                    <span class="main-price">{{abs(item.bidPrice)}}</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+        <template is="dom-if" if="{{!checkNum(personList.length)}}">
+          <div class="noData">暫無買家出價數據</div>
+        </template>
+      </div>
+    </div>
+    <!-- 获取出价列表 -->
+      <iron-ajax
+        id="getList"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/getVehiclePriceHistory')}}"
+        Content-Type="application/json"
+        on-response="_responList">
+      </iron-ajax>
+      <!-- 获取倒计时 -->
+      <iron-ajax
+        id="getSystemSetting"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/systemSetting')}}"
+        Content-Type="application/json"
+        on-response="_responSystemSetting">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerStarting extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-starting'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            observer: '_checkPage'
+          },
+          time : {
+            type: String,
+            // value: '00:00:00'
+            observer: '_checkTime'
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      _responList(e) {
+        let data = e.detail.response
+        this.data = data
+        this.personList = data.ownerVehiclePriceHistoriesResponseViewList
+      }
+      checkNum(val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      checkSize (val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      _checkPage (val) {
+        if (val === 'seller-starting') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            let vehicleId = this.getViewParam().vehicleId
+            token['st'] = st
+            this.$.getList.body = {
+              maxResult: 3,
+              vehicleId: vehicleId
+            }
+            this.$.getList.generateRequest();
+            this.$.getSystemSetting.generateRequest();
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+      _checkTime (val) {
+        if (val === '00:00:00') {
+          this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-end"},bubbles: true, composed: true}));
+        }
+      }
+      _responSystemSetting(e) {
+        let data = e.detail.response
+        this.getCountDown(data.auctionEndDate)
+      }
+      getCountDown(timestamp){
+        let that = this
+        setInterval(function(){
+            var nowTime = new Date();
+            var endTime = new Date(timestamp);
+
+            var t = endTime.getTime() - nowTime.getTime();
+            if (t <= 0) {
+              return that.time = '00:00:00'
+            }
+//            var d=Math.floor(t/1000/60/60/24);
+            var hour=Math.floor(t/1000/60/60%24);
+               var min=Math.floor(t/1000/60%60);
+               var sec=Math.floor(t/1000%60);
+
+            if (hour < 10) {
+                 hour = "0" + hour;
+            }
+            if (min < 10) {
+                 min = "0" + min;
+            }
+            if (sec < 10) {
+                 sec = "0" + sec;
+            }
+            var countDownTime = hour + ":" + min + ":" + sec;
+            that.time = countDownTime
+            that.$.getList.generateRequest();
+        },1000);
+      }
+      goAnswer (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-answer"},bubbles: true, composed: true}));
+      }
+      goCarDetail(e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-car-detail"},bubbles: true, composed: true}));
+      }
+    }
+
+    window.customElements.define(SellerStarting.is, SellerStarting);
+  </script>
+</dom-module>

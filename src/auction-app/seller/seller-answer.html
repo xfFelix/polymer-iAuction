@@ -1,0 +1,270 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+<link rel="import" href="../components/no-data.html">
+
+<dom-module id="seller-answer">
+  <template>
+    <style include = "shared-styles">
+      .container{
+        box-sizing: border-box;
+      }
+      .header{
+        width: 100%;
+        background-color: rgba(204, 0, 0, 1);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .header-left {
+        position: absolute;
+        left: 15px;
+      }
+      .header-center .center-text{
+        font-size: 20px;
+        color: #FFFFFF
+      }
+
+      .list-header{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .list-header p{
+        margin-bottom: 0;
+        font-size: 17px;
+      }
+      .list-header .header-name{
+        font-weight: bold;
+      }
+      .list-header .header-time{
+        font-size: 14px;
+        color: #797979;
+      }
+      .list-body .body-text{
+        font-size: 18px;
+        margin-bottom: 0;
+      }
+      .list-mine{
+        background-color: #e4e4e4;
+      }
+      .list-mine .mine-title{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .list-mine .mine-title p {
+        margin-bottom: 0;
+      }
+      .list-mine .mine-title .title-name{
+        font-size: 16px;
+        font-weight: bold;
+        color: red;
+        margin-left: 20px;
+      }
+      .list-mine .mine-title .title-time{
+        color: #797979;
+      }
+      .list-mine .mine-body .body-text{
+        font-size: 16px;
+        margin-left: 20px;
+        margin-bottom: 0;
+      }
+
+      .content{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .content-list {
+        width: 93%;
+      }
+      .content-list .list-write{
+        color: #0000FF;
+        font-weight: bold;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+      }
+      .content-list .list-write span{
+        cursor: pointer;
+      }
+      .write-text{
+        width: 70%;
+      }
+    </style>
+   
+    <div>
+      <register-header title="回答買家問題" is-back="isBack"></register-header>
+      <div class="container">
+        <!-- <div class="header">
+          <div class="header-left" on-click="goBack">
+            <img src="../../../images/arrow.png" alt="" class="left-icon">
+          </div>
+          <div class="header-center">
+            <p class="center-text">问与答</p>
+          </div>
+        </div> -->
+        <template is="dom-if" if="{{checkSize(questionList.length)}}">
+
+          <div class="content">
+            <template is="dom-repeat" items="{{questionList}}">
+              <div class="content-list">
+                <div class="list-header">
+                  <p class="header-name">{{item.questioner}}</p>
+                  <p class="header-time">{{formatDate(item.questionCreateAt)}}</p>
+                </div>
+                <div class="list-body">
+                  <p class="body-text">&nbsp;&nbsp;&nbsp;&nbsp;{{item.question}}</p>
+                </div>
+                <template is="dom-if" if="{{_checkAnswer(item.answer)}}">
+                  <div class="list-mine">
+                    <div class="mine-title">
+                      <p class="title-name">我的回復</p>
+                      <p class="title-time">{{formatDate(item.answerCreateAt)}}</p>
+                    </div>
+                    <div class="mine-body">
+                      <p class="body-text">&nbsp;&nbsp;&nbsp;&nbsp;{{item.answer}}</p>
+                    </div>
+                  </div>
+                </template>
+                <template is="dom-if" if="{{!_checkAnswer(item.answer)}}">
+                  <div class="list-write">
+                    <vaadin-text-field value="{{item.failedReason}}" required class="write-text"></vaadin-text-field>
+                    <span on-click="sendAnswer">回复</span>
+                  </div>
+               </template>
+              </div>
+            </template>
+            <!-- <div class="content-list">
+              <div class="list-header">
+                <p class="header-name">werewr</p>
+                <p class="header-time">2018-04-08  13:35:33</p>
+              </div>
+              <div class="list-body">
+                <p class="body-text">&nbsp;&nbsp;&nbsp;&nbsp;保險又需要幾多錢呢？係咪要問左保險價先睇車？</p>
+              </div>
+              <div class="list-write">
+                <span>回复</span>
+              </div>
+            </div> -->
+          </div>
+        </template>
+        <template is="dom-if" if="{{!checkSize(questionList.length)}}">
+          <no-data></no-data>
+        </template>
+      </div>
+    </div>
+      <!-- 获取问答列表 -->
+      <iron-ajax
+        id="getQuestionsByVehicle"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/getQuestionsByVehicle')}}"
+        Content-Type="application/json"
+        on-response="_responQuestion">
+      </iron-ajax>
+      <!-- 回复 -->
+      <iron-ajax
+        id="updateAnswer"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/answersQuestion')}}"
+        Content-Type="application/json">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerAnswer extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-answer'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            observer: '_checkPage'
+          },
+          vehicleId: {
+            type: String,
+            value: JSON.parse(localStorage.vehicleId) || ''
+          },
+          isBack: {
+            type: Boolean,
+            value: true
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      sendAnswer (e) {
+        let data = e.model.item
+        let questionUid = data.recordId
+        let text = data.failedReason
+        if (text) {
+          this.$.updateAnswer.body= {
+            questionUid: questionUid,
+            text: text,
+            vehicleId: this.vehicleId
+          }
+          this.$.updateAnswer.generateRequest().completes.then(res => {
+            let result = res.response
+            if (result.success) {
+              this.$.getQuestionsByVehicle.generateRequest()
+            }
+          })
+        }
+      }
+      checkSize(val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      _checkAnswer (val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      _responQuestion (e) {
+        let data = e.detail.response
+        this.questionList = data.ownerVehicleQuestionResponseViewList
+      }
+      goBack (e) {
+        window.history.back()
+        // this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-starting"},bubbles: true, composed: true}));
+      }
+      async _checkPage (val) {
+        if (val === 'seller-answer') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.$.getQuestionsByVehicle.body = {
+              vehicleId: this.vehicleId
+            }
+            this.$.getQuestionsByVehicle.generateRequest()
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+    }
+
+    window.customElements.define(SellerAnswer.is, SellerAnswer);
+  </script>
+</dom-module>

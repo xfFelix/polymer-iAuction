@@ -1,0 +1,39 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-home">
+  <template>
+    <style include = "shared-styles">
+      
+    </style>
+   
+    <div>
+      seller-home
+    </div>
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerHome extends Polymer.Element {
+      static get is() { return 'seller-home'; }
+      static get properties() {
+        return {
+          
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+
+    }
+
+    window.customElements.define(SellerHome.is, SellerHome);
+  </script>
+</dom-module>

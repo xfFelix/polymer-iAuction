@@ -1,0 +1,23 @@
+{
+	"entrypoint": "index.html",
+	"shell": "src/auction-app/auction-app.html",
+	"fragments": [
+	    "src/auction-app/register/register-page.html",
+	    "src/auction-app/seller/seller-page.html"
+	],
+	"sources": [
+	   "src/**/*",
+	   "data/**/*",
+	   "images/**/*",
+	   "bower.json"
+	],
+	"extraDependencies": [
+	    "bower_components/webcomponentsjs/webcomponents-loader.js"
+	],
+	"lint": {
+	    "rules": ["polymer-2"]
+	},
+	"builds": [
+	    { "preset": "es5-bundled" }
+	]
+}

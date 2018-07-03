@@ -1,0 +1,190 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+
+<dom-module id="register-add-vehicle">
+  <template>
+    <style include="comment-styles">
+      .text-center{
+          text-align: center;
+      }
+      .section{
+        margin: 10px 0;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+      .section_content{
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+      }
+      .forbid{
+        position: relative;
+      }
+      .licence,.type,.email,.mobile,.factory,.name,.sex{
+        min-width:  260px;
+      }
+      .hint{
+        font-family: PingFangTC-Light;
+        font-size: 13px;
+        color: #D0021B;
+        letter-spacing: 0;
+        padding: 10px 20px;
+        box-sizing: border-box;
+      }
+      #button{
+          margin-top: 100px;
+      }
+    </style>
+    <register-header title="車輛資料" is-back="{{isBack}}"></register-header>
+    <div>
+        <div id="container">
+            <img class="header_img" src="../../../images/banner.jpg"/>
+            <h4 class="text-center">車輛資料</h4>
+            <div class="section">
+                <div class="section_content">
+                    <div>車廠<span>*</span>:</div>
+                    <vaadin-combo-box class="factory" placeholder="請選擇" items="[[carFactoryList]]" item-label-path="vehicleName" item-value-path="vehicleId" selected-item="{{carFactory}}">
+                    </vaadin-combo-box>
+                </div>
+            </div>
+    
+            <div class="section">
+                <div class="section_content">
+                    <div>型號<span>*</span>:</div>
+                    <vaadin-text-field class="type" value="{{vehicleSeriesName}}" on-blur="isSeries"></vaadin-text-field>
+                </div>
+                <span class="forbid" hidden="{{serForbid}}">{{serForbidText}}</span>
+            </div>
+    
+            <div class="section">
+                <div class="section_content">
+                <div>車牌<span>*</span>:</div>
+                <vaadin-text-field class="licence" value="{{vehicleLicenseNo}}"></vaadin-text-field>
+                </div>
+                <span class="forbid" hidden="{{liForbid}}">{{liForbidText}}</span>
+            </div>
+            <div class="hint">*請確定車輛資料無誤</div>
+            <template is="dom-if" if="{{isNext}}">
+                <div id="button" on-click="goNext">提交登記</div>
+            </template>
+            <template is="dom-if" if="{{!isNext}}">
+                <div id="button" style="background-color: #797979;">提交登記</div>
+            </template>
+        </div>
+
+    </div>
+    <!-- 保存 -->
+    <iron-ajax
+        id="_savaVehicle"
+        method="POST"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/addVehicle')}}"
+        Content-Type="application/json">
+    </iron-ajax>
+    <!-- 车厂列表 -->
+    <iron-ajax
+        id="getFactoryList"
+        method="GET"
+        url = "{{setUrl('public/seller/allVehicle')}}"
+        Content-Type="application/json"
+        on-response="_responFactory">
+    </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterAddVehicle extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-add-vehicle'; }
+      static get properties() {
+        return {
+            isBack: {
+                type: Boolean,
+                value: true
+            },
+            // 车厂选项
+            carFactoryList: {
+                type: Array
+            },
+            route: {
+                type: String,
+                observer: 'checkRoute'
+            },
+            // 选中的车厂
+            carFactory: {
+                type: Object
+            },
+            isNext: {
+                type: Boolean,
+                value: false
+            }
+        };
+      }
+      static get observers(){
+        return [
+            'checkBox(carFactory, vehicleSeriesName, vehicleLicenseNo)'
+        ]
+      }
+      checkBox(carFactory, vehicleSeriesName, vehicleLicenseNo) {
+        if (carFactory && vehicleSeriesName && vehicleLicenseNo) {
+            this.isNext = true
+        } else {
+            this.isNext = false
+        }
+      }
+      /**
+       * 型号验证
+       * @param  {[type]}  e [description]
+       * @return {Boolean}   [description]
+       */
+       isSeries(e) {
+        let series = e.target.value
+        if (!series) {
+          this.serForbidText = '型號不能為空'
+          return this.serForbid = false
+        } else {
+          return this.serForbid = true
+        }
+      }
+      checkRoute (route) {
+          if (route === 'register-add-vehicle') {
+            this.$.getFactoryList.generateRequest()
+            if (window.location.toString().indexOf('?') != -1) {
+                let st = this.getViewParam().st
+                token['st'] = st
+            } else {
+                this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+            }
+          }
+      }
+      async goNext () {
+          this.$._savaVehicle.body ={
+            brandId : this.carFactory.vehicleId,
+            seriesName: this.vehicleSeriesName
+          }
+          if (this.vehicleLicenseNo) {
+            this.$._savaVehicle.body.vehicleLicense = this.vehicleLicenseNo
+          }
+          let res = await this.$._savaVehicle.generateRequest().completes
+          let data = res.response
+          if (data.vehicleId) {
+              sessionStorage.vehicleId = data.vehicleId
+              sessionStorage.mobile = data.ownerView.mobile
+              this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'register/register-pay'}, bubbles: true, composed: true}))
+          } else {
+              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '提交失敗'}, bubbles: true, composed: true}))
+          }
+      }
+      _responFactory (e) {
+        this.carFactoryList = e.detail.response
+      }
+    }
+
+    window.customElements.define(RegisterAddVehicle.is, RegisterAddVehicle);
+  </script>
+</dom-module>

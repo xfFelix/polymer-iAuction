@@ -1,0 +1,199 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/utils/import-href.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<!-- <link rel="import" href="../../bower_components/neon-animation/web-animations.html"> -->
+
+<!-- 输入框 -->
+<!-- <link rel="import" href="../../bower_components/paper-input/paper-input.html"> -->
+<link rel="import" href="../../bower_components/vaadin-text-field/vaadin-text-field.html">
+<link rel="import" href="../../bower_components/vaadin-text-field/vaadin-password-field.html">
+<link rel="import" href="../../bower_components/vaadin-text-field/vaadin-text-area.html">
+<link rel="import" href="../../bower_components/l2t-paper-slider/l2t-paper-slider.html" >
+<!-- <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html"> -->
+<!-- <link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html"> -->
+<!-- <link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html"> -->
+<!-- <link rel="import" href="../../bower_components/paper-item/paper-item.html"> -->
+<link rel="import" href="../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
+<link rel="import" href="../../bower_components/vaadin-radio-button/vaadin-radio-button.html">
+<link rel="import" href="../../bower_components/vaadin-radio-button/vaadin-radio-group.html">
+<link rel="import" href="../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../../bower_components/vaadin-upload/vaadin-upload.html">
+<!-- 彈出框 -->
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
+<link rel="import" href="../../bower_components/datetime-picker/date-picker.html">
+<!-- ajax -->
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<!-- 公用样式 -->
+<link rel="import" href="../styles/shared-styles.html">
+<!-- 全局样式变量声明 -->
+<link rel="import" href="../styles/global-styles.html">
+<link rel="import" href="../styles/comment-styles.html">
+<!-- 公用方法 -->
+<link rel="import" href="../auction-mixin.html">
+<!-- 提示組件 -->
+<link rel="import" href="./components/lt-pop.html">
+<script src="../../bower_components/animejs/anime.js"></script>
+<!-- photo 裁剪 -->
+<script src="../../bower_components/Croppie/croppie.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.3.6/cropper.js"></script>
+
+<dom-module id="auction-app">
+  <template>
+    <style include = "shared-styles">
+      :host {
+        display: block;
+        width: 100%;
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .content{
+        height: 100%;
+        flex: 1;
+      }
+      footer{
+        bottom: 0;
+        width: 100vw;
+        text-align: center;
+        color: #9B9B9B;
+      }
+      paper-dialog{
+        min-width: 250px;
+        border-radius: 10px;
+      }
+      .confirmBox{
+        min-height: 100px;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+    <!-- 路由 -->
+    <!-- app-location binds to the app's URL -->
+    <app-location route="{{route}}" query-params="{{query}}"></app-location>
+
+    <!-- this app-route manages the top-level routes -->
+    <app-route
+        route="{{route}}"
+        pattern="/:view"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+    <app-route
+        route="{{subroute}}"
+        pattern="/:subroute"
+        data="{{subData}}"
+        tail="{{idroute}}"></app-route>
+    <app-route
+        route="{{idroute}}"
+        pattern="/:uid"
+        data="{{idData}}"></app-route>
+    <!-- 提示信息彈出框 -->
+    <paper-dialog id="confirmDialog" modal>
+      <h2>提示</h2>
+      <div>
+        {{confirmText}}
+      </div>
+      <div class="buttons">
+        <paper-button dialog-confirm autofocus>確定</paper-button>
+      </div>
+    </paper-dialog>
+    <lt-pop id="toastDialog">
+        <div class="confirmBox">
+            {{confirmText}}
+        </div>
+    </lt-pop>
+    <div class="content">
+      <iron-pages selected = "{{page}}" attr-for-selected = "page">
+        <register-page page="register" view$= "{{routeData.view}}" sub-route$="{{subData.subroute}}"></register-page>
+        <seller-page page="seller" view$= "{{routeData.view}}" sub-route$="{{subData.subroute}}"></seller-page>
+        <admin-page page="admin" view$= "{{routeData.view}}" sub-route$="{{subData.subroute}}" uid="{{idData.uid}}"></admin-page>
+      </iron-pages>
+    </div>
+    <footer>
+      Copyright © 2018 LinkedTech （HK） Solutions Limited. All Rights Reserved.
+    </footer>
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AuctionApp extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'auction-app'; }
+      static get properties() {
+        return {
+          route : Object,
+          routeData : {
+            type : Object,
+          },
+          page : {
+            type : String,
+            observer : "_pageChange"
+          },
+          query:{
+            type:Object,
+          },
+        };
+      }
+      static get observers(){
+        return [
+          'routeChange(routeData.view)'
+        ]
+      }
+      // 监听路由
+      listenRoute(e){
+        if(e.detail.path){
+          this.set('route.path', e.detail.path);
+        }
+      }
+      // 换页
+      routeChange(view){
+        if(view){
+          Polymer.importHref(
+            this.resolveUrl(view + "/" + view + "-page.html"),
+            ()=>{this.page = view;},()=>{location.href = "/register/register-home";}, true);
+        }else{
+          // 默认页
+          location.href = "/register/register-home";
+        }
+      }
+      _pageChange(newVal,oldVal){
+        if(newVal){
+
+        }
+      }
+      listenConfirm(e){
+        this.confirmText = e.detail.msg;
+        this.$.confirmDialog.open();
+      }
+      listenToast(e){
+        this.confirmText = e.detail.msg;
+        this.$.toastDialog.opened = true;
+        this.$.toastDialog.introAnimation();
+      }
+      listenToastOut (e) {
+        this.$.toastDialog.close()
+      }
+      ready() {
+        super.ready();
+        this.addEventListener('pathchange', this.listenRoute);
+        // 提示消息
+        this.addEventListener('confirm', this.listenConfirm);
+        this.addEventListener('toast', this.listenToast);
+        this.addEventListener('toastOut', this.listenToastOut);
+      }
+    }
+
+    window.customElements.define(AuctionApp.is, AuctionApp);
+  </script>
+</dom-module>

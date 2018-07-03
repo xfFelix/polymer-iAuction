@@ -1,0 +1,206 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="seller-call-buyer">
+  <template>
+    <style include = "shared-styles">
+      .red{
+        color: red;
+      }
+      .container{
+        box-sizing: border-box;
+      }
+      .header{
+        width: 100%;
+        background-color: rgba(204, 0, 0, 1);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .header-left {
+        position: absolute;
+        left: 15px;
+      }
+      .header-center .center-text{
+        font-size: 20px;
+        color: #FFFFFF
+      }
+
+      .content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-top: 50px;
+      }
+      .content-name .name-text{
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .content-sex .sex-text{
+        font-size: 16px;
+        margin-top: 0
+      }
+      .content-price .price-text{
+        font-size: 20px;
+        font-weight: bold;
+      }
+      .content-des{
+        margin-top: 50px;
+      }
+      .content-des .des-text{
+        font-size: 16px;
+      }
+      .note{
+        text-align: center;
+        margin-top: 20px;
+      }
+      .note .title {
+        color: #006dee;
+        font-size: 19px;
+        font-weight: bold;
+      }
+      .note .body{
+        color: #4a90e2;
+        line-height: 26px;
+        margin-top: 5px;
+      }
+      .last{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        /* position: fixed; */
+        margin-top: 200px;
+        bottom: 50px;
+        width: 100%;
+      }
+      .last .last-phone{
+        border: 1px solid rgba(255, 153, 102, 1);
+        background-color: #f7a700;
+        width: 90%;
+        height: 50px;
+        color: #FFFFFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+      }
+    </style>
+   
+    <div>
+      <div class="container">
+        <div class="header">
+          <div class="header-left" on-click="goback">
+            <img src="../../../images/arrow.png" alt="" class="left-icon">
+          </div>
+          <div class="header-center">
+            <p class="center-text">联络买家</p>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="content-name">
+            <p class="name-text">{{data.name}}</p>
+          </div>
+          <div class="content-sex">
+              <p class="sex-text">{{sexName}}</p>
+          </div>
+          <div class="content-price">
+            <p class="price-text">
+              買家最終成交價：<span class="red">${{abs(data.finallySellingPrice)}}</span>
+            </p>
+          </div>
+          <div class="content-des">
+            <p class="des-text">
+              您好車主，歡迎致電買家進行後續購買程序！
+            </p>
+          </div>
+        </div>
+
+        <div class="last">
+          <div class="last-phone" on-click="callUser">
+            <img src="../../../images/u686.png" alt="" class="phone-icon">
+            聯絡&nbsp;&nbsp;&nbsp;[[data.mobile]]
+          </div>
+        </div>
+        <div class="note">
+          <div class="title">需要專業托管服務,與買家完成交收?</div>
+          <div class="body">
+            歡迎致電郭律師,(電話: 2770 5454),<br/>
+            查詢托管服務及費用
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- 获取買家信息-->
+      <iron-ajax
+        id="getDetail"
+        method="POST"
+        headers = "{{token}}"
+        body = "{}"
+        url = "{{setUrl('owner/getBuyerDetails')}}"
+        Content-Type="application/json"
+        on-response="_responDetail">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SellerCallBuyer extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'seller-call-buyer'; }
+      static get properties() {
+        return {
+          route:{
+            type : String,
+            observer: '_checkPage'
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      goback () {
+        window.history.back()
+      }
+      _responDetail (e) {
+        if (e.detail.response.success) {
+          this.data = e.detail.response
+          if (this.data.salutation === 'G1') {
+            this.sexName = "先生"
+          } else if (this.data.salutation === 'G2'){
+            this.sexName = "女士"
+          }
+        }
+      }
+      _checkPage (val) {
+        if (val === 'seller-call-buyer') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.$.getDetail.body = {
+              buyerId : JSON.parse(sessionStorage.buyerId),
+              afterAuction: true,
+              vehicleId: JSON.parse(localStorage.vehicleId)
+            }
+            this.$.getDetail.generateRequest();
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+      callUser () {
+         window.location.href = "tel:" + this.data.mobile;
+      }
+    }
+
+    window.customElements.define(SellerCallBuyer.is, SellerCallBuyer);
+  </script>
+</dom-module>

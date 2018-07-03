@@ -1,0 +1,238 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="admin-car">
+  <template>
+    <style>
+      .container{
+        display: flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-bottom: 1px solid #ddd;
+      }
+      .container section{
+        flex:0 1 auto;
+      }
+      .imgbox{
+        position: relative;
+        width: 20%;
+      }
+      .imgbox img{
+        width: 100%;
+        height: 120px;
+      }
+      .imgbox .mark-num{
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: #fff;
+        background: var(--app-primary-color);
+        padding: 5px;
+        font-size: 14px;
+      }
+      .info{
+        padding: 0 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+      }
+      .brand{
+        font-weight: 500;
+      }
+      .series{
+        color:#0000009c;
+      }
+      .otherInfo{
+        max-width: 200px;
+        color: #0000003b;
+        font-size: 12px;
+      }
+      .time{
+        color: #bdbdbd;
+      }
+      .price{
+        color: #828282;
+      }
+      .price span{
+        color: #f00;
+        font-weight: 600;
+      }
+      .status{
+        align-self: flex-start;
+        font-size: 22px;
+        font-weight: 500;
+        color: #ff9a0f;
+      }
+      .custom{
+        align-self: flex-end;
+        font-weight: 500;
+      }
+      .container .action{
+        flex:1;
+        display: flex;
+        justify-content: flex-end;
+
+      }
+      .action .item{
+        color: #4A90E2;
+        padding: 0 15px;
+        cursor: pointer;
+      }
+      .action .item:hover{
+        color: var(--app-primary-color);
+      }
+    </style>
+    <div class="container">
+      <section class="imgbox">
+        <div class="mark-num">
+          {{data.locationNumber}}
+        </div>
+        <img src$="{{logo}}" alt="圖片" onerror="this.src='/images/banner.jpg'">
+      </section>
+      <section class="info" style="width: 200px;">
+        <div class="brand">
+          {{data.brandName}} 
+        </div>
+        <div class="series">
+          {{data.seriesName}}
+        </div>
+        <div class="time">
+          {{setTimeFormat(data.createAt)}}
+        </div>
+        <div class="otherInfo">
+          {{data.typeName}}  {{data.numberOfSeat}}座 {{data.engineVolume}} {{data.transmissionTypeName}} {{data.manufactureYear}}年 {{data.miles}}公里  
+        </div>
+        <div class="price">
+          底價  <span>{{abs(data.sellingPrice)}}</span>
+        </div>
+        <div class="price" style="color: blue;">
+          {{data.ownerView.name}} {{data.ownerView.mobile}}
+        </div>
+      </section>
+      <template is="dom-if" if="{{checkStatus(data.display)}}">
+        <section class="status">
+          已發佈
+        </section>
+      </template>
+      <template is="dom-if" if="{{!checkStatus(data.display)}}">
+        <section class="status">
+          已下架
+        </section>
+      </template>
+      <template is="dom-if" if="{{checkCash(data.ownerView.paymentType)}}">
+        <section class="custom">
+          預約時間：{{data.ownerView.reserveDate1}} <br>
+          預付：($600)現金支付
+        </section>
+      </template>
+      <template is="dom-if" if="{{checkAliyun(data.ownerView.paymentType)}}">
+        <section class="custom">
+          預約時間：{{data.ownerView.reserveDate1}} <br>
+          預付：($400)支付寶
+        </section>
+      </template>
+      <template is="dom-if" if="{{checkPaypal(data.ownerView.paymentType)}}">
+        <section class="custom">
+          預約時間：{{data.ownerView.reserveDate1}} <br>
+          預付：($480)Paypal
+        </section>
+      </template>
+      <section class="action">
+        <template is="dom-if" if="{{checkLoop(data.loopPlay)}}">
+          <div class="item" on-click="_fireActionEvent" data-action="4">設為輪播</div>
+        </template>
+        <template is="dom-if" if="{{!checkLoop(data.loopPlay)}}">
+          <div class="item" on-click="_fireActionEvent" data-action="4">取消轮播</div>
+        </template>
+        <template is="dom-if" if="{{data.display}}">
+          <div class="forbid" style="color: #0000003b;"  data-action="1">發佈</div>
+        </template>
+        <template is="dom-if" if="{{!data.display}}">
+          <div class="item" on-click="_fireActionEvent" data-action="1">發佈</div>
+        </template>
+        <template is="dom-if" if="{{!data.display}}">
+          <div class="forbid" style="color: #0000003b; "  data-action="2">下架</div>
+        </template>
+        <template is="dom-if" if="{{data.display}}">
+          <div class="item" on-click="_fireActionEvent" data-action="2">下架</div>
+        </template>
+        <!-- <div class="item" on-click="_fireActionEvent" data-action="3">刪除</div> -->
+        <div class="item" on-click="_fireActionEvent" data-action="5">編輯</div>
+      </section>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class AdminCar extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'admin-car'; }
+      static get properties() {
+        return {
+          data : {
+            type : Object
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      checkCash (val) {
+        if (val == '1') {
+          return true
+        }
+      }
+      checkAliyun (val) {
+        if (val == '2') {
+          return true
+        }
+      }
+      checkPaypal (val) {
+        if (val == '3') {
+          return true
+        }
+      }
+      checkStatus(val) {
+        if (val) {
+          return true
+        } else {
+          return false
+        }
+      }
+      checkLoop (val) {
+        if (val) {
+          return false
+        } else {
+          return true
+        }
+      }
+      ready() {
+        super.ready();
+        if (this.data.imgUrlList) {
+          this.logo = this.data.imgUrlList[0]
+        }
+      }
+      _fireActionEvent(e){
+        var target = e.composedPath()[0];
+        // 發佈 type = 1;
+        // 下架 type = 2;
+        // 刪除 type = 3;
+        // 設為輪播 type = 4;
+        var actionType = target.getAttribute('data-action');
+        if (actionType === '5') {
+          this.dispatchEvent(new CustomEvent('car-action', {detail:{data:this.data,type:actionType}}));
+        } else {
+          this.dispatchEvent(new CustomEvent('car-action', {detail:{uid:this.data.uid,type:actionType,loopPlay: this.data.loopPlay, mobile: this.data.ownerView.mobile}}));
+        }
+      }
+
+    }
+
+    window.customElements.define(AdminCar.is, AdminCar);
+  </script>
+</dom-module>

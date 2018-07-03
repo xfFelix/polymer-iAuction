@@ -1,0 +1,166 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="register-pay-success">
+  <template>
+    <style include = "shared-styles">
+      .time-end{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 22px;
+        font-weight: bold;
+        font-family: cursive;
+      }
+    </style>
+   
+    <div>
+      <div id="container">
+      <img class="header_img" src="../../../images/done.png"/>
+
+
+      <h3>恭喜您，支付成功！</h3>
+      <div class="time-end">{{getSMScodeLabel}}后自動返回主頁......</div>
+
+      <!-- <p class="info">請留意接收我們後續下發的</p>
+      <p class="info">短訊，以便完成線上拍賣服務！</p> -->
+
+      <!-- <div class="box">
+
+      <div class="list">
+      <div class="list_left">
+      姓名：
+      </div>
+      <div class="list_right">
+      {{register.name}}
+      </div>
+      </div>
+
+      <div class="list">
+      <div class="list_left">
+      手提：
+      </div>
+      <div class="list_right">
+      {{register.mobile}}
+      </div>
+      </div>
+
+      <div class="list">
+      <div class="list_left">
+      預約時間：
+      </div>
+      <div class="list_right">
+       {{formatDateTime(register.reserveDate1)}}
+      </div>
+      </div>
+
+      <div class="list">
+      <div class="list_left">
+      登記車廠：
+      </div>
+      <div class="list_right">
+      {{register.vehicleBrandName}}
+      </div>
+      </div>
+
+      <div class="list">
+      <div class="list_left">
+      登記型號：
+      </div>
+      <div class="list_right">
+      {{register.vehicleSeriesName}}
+      </div>
+      </div>
+
+      <div class="list">
+      <div class="list_left">
+      預付：
+      </div>
+      <div class="list_right">
+      現場支付（$600）
+      </div>
+      </div>
+
+      <img class="qrcode" src$="{{base64Png(register.qrCodeByte)}}"/>
+      <p class="reminder">請注意截圖保存好此資料卡!</p>
+      </div> -->
+      </div>
+
+    </div>
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterPaySuccess extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-pay-success'; }
+      static get properties() {
+        return {
+          // 登记信息
+          register: {
+            type: Object
+          },
+          // 当前路由
+          subRoute:{
+            type : String,
+            // observer: '_checkPage'
+          },
+          getSMScodeLabel: {
+            type: String,
+            value: '3s'
+          }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      ready() {
+        super.ready();
+        if (this.checkApp() == 'android') {
+          let secCount = 3
+          var timeCount = setInterval(() => {
+              if(secCount > 0){
+                  --secCount;
+                  this.getSMScodeLabel = secCount + "s";
+              }else{
+                  window.app.onPayResultCallBack('1')
+                  window.clearInterval(timeCount);
+                  this.getSMScodeLabel = "0s";
+              }
+          },1000);
+				} else if (this.checkApp() == 'ios') {
+          let secCount = 3
+          var timeCount = setInterval(() => {
+              if(secCount > 0){
+                  --secCount;
+                  this.getSMScodeLabel = secCount + "s";
+              }else{
+                  window.webkit.messageHandlers.iAuctionPushHome.postMessage('sam');
+                  window.clearInterval(timeCount);
+                  this.getSMScodeLabel = "0s";
+              }
+          },1000);
+        }
+      }
+      /**
+       * 页面验证和数据获取
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _checkPage (e) {
+        if (e === 'register-pay-success') {
+          this.register = JSON.parse(sessionStorage.register)
+        }
+      }
+
+    }
+
+    window.customElements.define(RegisterPaySuccess.is, RegisterPaySuccess);
+  </script>
+</dom-module>

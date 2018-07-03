@@ -1,0 +1,373 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../components/register-header.html">
+
+<dom-module id="register-update">
+  <template>
+    <style include="comment-styles">
+      .section{
+        margin: 10px 0;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+      .section_content{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
+      }
+      .name{
+        min-width: 260px;
+      }
+      #button{
+        margin-top: 20px;
+      }
+    </style>
+    <register-header title="修改資料" is-back="{{isBack}}"></register-header>
+    <div>
+        <div id="container">
+          <!-- <div class="section">
+            <div class="section_content">
+              <div>姓名<span>*</span>:</div> <vaadin-text-field class="name"   value="{{name}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>稱呼<span>*</span>:</div> <vaadin-combo-box class="name" placeholder="請選擇" items="[[sexList]]" item-label-path="name" item-value-path="uid" selected-item="{{sex}}"></vaadin-combo-box>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>手機號碼<span>*</span>:</div> <vaadin-text-field disabled class="name"   value="{{mobile}}"></vaadin-text-field>
+            </div>
+             
+          </div> -->
+          <div class="section">
+            <div class="section_content">
+              <div>車廠<span>*</span>:</div><vaadin-combo-box class="name" placeholder="請選擇" items="[[carFactoryList]]" item-label-path="vehicleName" item-value-path="vehicleId" selected-item="{{carFactory}}">
+              </vaadin-combo-box>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>型號<span>*</span>:</div> <vaadin-text-field class="name"   value="{{seriesName}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>車牌<span>*</span>:</div> <vaadin-text-field class="name"   value="{{vehicleLicense}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <!-- <div class="section">
+            <div class="section_content">
+              <div>顏色<span>*</span>:</div> <vaadin-text-field class="name"   value="{{name}}"></vaadin-text-field>
+            </div>
+             
+          </div> -->
+          <div class="section">
+            <div class="section_content">
+              <div>類別<span></span>:</div><vaadin-combo-box class="name" placeholder="請選擇" items="[[vehicleTypeList]]" item-label-path="name" item-value-path="uid" selected-item="{{vehicleType}}">
+              </vaadin-combo-box>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>座位數目<span></span>:</div> <vaadin-combo-box class="name" placeholder="請選擇" items="[[seatTypeList]]" item-label-path="name" item-value-path="uid" selected-item="{{seatType}}">
+              </vaadin-combo-box>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>氣缸容積<span></span>:</div> <vaadin-text-field class="name"   value="{{engineVolume}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>里數<span></span>:</div> <vaadin-text-field class="name"   value="{{miles}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>車位編號<span></span>:</div> <vaadin-text-field class="name" disabled  value="{{locationNumber}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <div class="section">
+            <div class="section_content">
+              <div>底價<span></span>:</div> <vaadin-text-field class="name"   value="{{sellingPrice}}"></vaadin-text-field>
+            </div>
+             
+          </div>
+          <template is="dom-if" if="{{isNext}}">
+            <div id="button" on-click="goNext">確認修改</div>
+          </template>
+          <template is="dom-if" if="{{!isNext}}">
+              <div id="button" style="background-color: #797979;">確認修改</div>
+          </template>
+        </div>
+
+    </div>
+      <!-- 车厂列表 -->
+      <iron-ajax
+        id="getFactoryList"
+        method="GET"
+        url = "{{setUrl('public/seller/allVehicle')}}"
+        Content-Type="application/json"
+        on-response="_responFactory">
+      </iron-ajax>
+      <!-- 性別列表 -->
+      <iron-ajax
+        id="getSexList"
+        method="GET"
+        url = "{{setUrl('public/seller/salutation')}}"
+        Content-Type="application/json"
+        on-response="_responSexList">
+      </iron-ajax>
+      <!-- 车类列表 -->
+      <iron-ajax
+      id="getVehicleTypeList"
+      url="{{setUrl('owner/vehicleType')}}"
+      body="{}"
+      method="GET"
+      headers = "{{token}}"
+      Content-Type="application/json"
+      on-response="_responVehicleTypeList"></iron-ajax>
+      <!-- 座位列表 -->
+      <iron-ajax
+      id="getSeatTypeList"
+      url="{{setUrl('owner/seatType')}}"
+      body="{}"
+      method="GET"
+      headers = "{{token}}"
+      Content-Type="application/json"
+      on-response="_responSeatTypeList"></iron-ajax>
+      <!-- 位置列表 -->
+      <iron-ajax
+        id="getParkingSlotNumberList"
+        method="GET"
+        params="{{vehicleId}}"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/vehicleParkingSlotNumber')}}"
+        Content-Type="application/json"
+        on-response="_responParkingSlotNumberList">
+      </iron-ajax>
+      <!-- 车辆详情 -->
+      <iron-ajax
+      id="getDetail"
+      url="{{setUrl('owner/getVehicleDetails')}}"
+      body="{}"
+      method="POST"
+      headers = "{{token}}"
+      Content-Type="application/json"></iron-ajax>
+      <!-- 保存 -->
+      <iron-ajax
+        id="_savaVehicle"
+        method="POST"
+        headers = "{{token}}"
+        url = "{{setUrl('owner/addVehicle')}}"
+        Content-Type="application/json"
+        on-response="_responSave">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterUpdate extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-update'; }
+      static get properties() {
+        return {
+            isBack: {
+                type: Boolean,
+                value: true
+            },
+            isNext: {
+              type: Boolean,
+              value: false
+            },
+            route: {
+              type: String,
+              observer: 'checkRoute'
+            },
+            vehicleId: {
+              type: String,
+              value: JSON.parse(localStorage.vehicleId) || ''
+            }
+        };
+      }
+      static get observers(){
+        return [
+          'checkBox(seriesName, vehicleLicense, carFactory)'
+        ]
+      }
+      async goNext () {
+        this.$._savaVehicle.body = {
+          // ownerUserName: this.name,
+          // salutation: this.sex.uid,
+          // mobile: this.mobile,
+          vehicleId: JSON.parse(localStorage.vehicleId),
+          brandId : this.carFactory.vehicleId,
+          seriesName : this.seriesName,
+          vehicleLicense: this.vehicleLicense,
+          // transmissionType : transmissionType,
+          // manufactureYear : manufactureYear,
+          // additionalNote : additionalNote,
+        }
+        if (this.sellingPrice) {
+          this.$._savaVehicle.body.sellingPrice = this.sellingPrice
+        }
+        if (this.vehicleType) {
+          this.$._savaVehicle.body.typeId = this.vehicleType.uid
+        }
+        if (this.seatType) {
+          this.$._savaVehicle.body.numberOfSeat = this.seatType.uid
+        }
+        if (this.engineVolume) {
+          this.$._savaVehicle.body.engineVolume = this.engineVolume
+        }
+        if (this.miles) {
+          this.$._savaVehicle.body.miles = this.miles
+        }
+        let res = await this.$._savaVehicle.generateRequest().completes
+        if (res.response.success) {
+          this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '保存成功'}, bubbles: true, composed: true}))
+          let result = await this.$.getDetail.generateRequest().completes
+          let car = result.response
+          let owner = result.response.ownerView
+          this.setData(car, owner)
+        }
+      }
+      checkBox( seriesName, vehicleLicense, carFactory) {
+        if (seriesName&& vehicleLicense&& carFactory) {
+          return this.isNext = true
+        } else {
+          return this.isNext = false
+        }
+      }
+      async checkRoute(route) {
+        if (route === 'register-update') {
+          if (window.location.toString().indexOf('?') != -1) {
+              let st = this.getViewParam().st
+              token['st'] = st
+              this.st = st
+              await Promise.all([this.$.getFactoryList.generateRequest().completes,
+                this.$.getSexList.generateRequest().completes,
+                this.$.getVehicleTypeList.generateRequest().completes,
+                this.$.getSeatTypeList.generateRequest().completes])
+              this.$.getDetail.body = {
+                vehicleId: JSON.parse(localStorage.vehicleId)
+              }
+              let res = await this.$.getDetail.generateRequest().completes
+              let car = res.response
+              let owner = res.response.ownerView
+              this.setData(car, owner)
+          } else {
+              this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+      setData (car, owner) {
+        this.name = owner.name
+        this.mobile = owner.mobile
+        this.seriesName = car.seriesName
+        this.vehicleLicense = car.vehicleLicense
+        this.engineVolume = car.engineVolume
+        this.miles = car.miles
+        this.sellingPrice = car.sellingPrice
+        this.locationNumber = car.locationNumber
+        for (let i of this.sexList) {
+          if (owner.salutation === i.uid) {
+            this.sex = i
+            break;
+          }
+        }
+        // for (let i of this.parkingSlotNumberList) {
+        //   if (car.locationNumber === i.locationNumber) {
+        //     this.parkingSlotNumber = i
+        //     break;
+        //   }
+        // }
+        for (let i of this.carFactoryList) {
+          if (car.brandId === i.vehicleId) {
+            this.carFactory = i
+            break;
+          }
+        }
+        // for (let i of this.vehicleTransmissionTypeList) {
+        //   if (car.transmissionType === i.uid) {
+        //     this.vehicleTransmissionType = i
+        //     break;
+        //   }
+        // }
+        for (let i of this.seatTypeList) {
+          if (car.numberOfSeat === i.uid) {
+            this.seatType = i
+            break;
+          }
+        }
+        for (let i of this.vehicleTypeList) {
+          if (car.typeId === i.uid) {
+            this.vehicleType = i
+            break;
+          }
+        }
+      }
+      /**
+       * 车类列表 —— 回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+       _responVehicleTypeList(e) {
+        this.vehicleTypeList = e.detail.response;
+      }
+      /**
+       * 获取车厂列表-回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+       _responFactory (e) {
+        this.carFactoryList = e.detail.response
+      }
+      /**
+       * 性別列表 —— 回調
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      _responSexList(e) {
+        this.sexList = e.detail.response
+      }
+      /**
+       * 座位列表 —— 回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+       _responSeatTypeList(e) {
+        this.seatTypeList = e.detail.response;
+      }
+      /**
+       * 位置列表 —— 回調
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+       _responParkingSlotNumberList(e) {
+        this.parkingSlotNumberList = e.detail.response
+      }
+    }
+
+    window.customElements.define(RegisterUpdate.is, RegisterUpdate);
+  </script>
+</dom-module>

@@ -1,0 +1,451 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="register-upload-picture">
+  <template>
+    <!-- <link rel="stylesheet" type="text/css" href="/bower_components/Croppie/croppie.css"> -->
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.3.6/cropper.css" rel="stylesheet">
+    <style include = "shared-styles">
+      .logo{
+        width: 100%;
+      }
+      .title .title-text{
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+      }
+      .picture-list{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 130px;
+        height: 125px;
+      }
+      .picture-list div.one,.two,.three,.four,.five{
+        border: 1px solid #2a1f1f;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        font-weight: bold;
+        color: #FF9966;
+      }
+      .picture-list .img-one{
+        width: 45%;
+        height: 100%;
+        margin-right: 5px;
+      }
+      .picture-list .img-one .one{
+        height: 100%;
+        background-image: url('../../../images/u267.jpg');
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+      }
+      .picture-list .img-two{
+        height: 100%;
+        width: 22%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-right: 5px;
+      }
+      .picture-list .img-two .two{
+        height: 45%;
+        background-image: url('../../../images/u276.jpg');
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+      }
+      .picture-list .img-two .three{
+        height: 45%;
+        background-image: url('../../../images/u285.jpg');
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+      }
+      .picture-list .img-three{
+        height: 100%;
+        width: 22%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-right: 5px;
+      }
+      .picture-list .img-three .four{
+        height: 45%;
+        background-image: url('../../../images/u294.png');
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+      }
+      .picture-list .img-three .five{
+        height: 45%;
+        background-image: url('../../../images/u303.png');
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+      }
+      .last{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-top: 100px;
+      }
+      .last .last-phone{
+        border: 1px solid rgba(255, 153, 102, 1);
+        background-color: #f7a700;
+        width: 90%;
+        height: 50px;
+        color: #FFFFFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        border-radius: 25px;
+      }
+      .imgWidth{
+        width: 100%;
+      }
+      .loading{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+      }
+      /*裁剪的图片*/
+      /*#cropImgBox>div{
+        width: 100%;
+      }*/
+      .dialogs{
+        outline: none;
+        position: fixed;
+        /* top: 187.203px; */
+        /* left: 36px; */
+        box-sizing: border-box;
+        max-height: 592px;
+        z-index: 103;
+        width: 95%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        height: auto;
+        max-width: none !important;
+        margin: 0;
+      }
+      
+    </style>
+   
+    <div style="width: 100%;">
+      <div class="swipe-list">
+        <div class="swipe">
+          <img src="../../../images/banner.jpg" alt="" class="logo">
+        </div>
+      </div>
+      <div class="title">
+        <p class="title-text">車辆圖片上載</p>
+      </div>
+      <div class="loading" hidden="{{!loading}}">
+        <paper-spinner active="{{loading}}"></paper-spinner>
+      </div>
+      <div class="picture-list">
+        <div class="img-one">
+          <input hidden="true" enctype="multipart" type="file" id="upload" accept="image" on-change="uploadPic">
+          <template is="dom-if" if="{{isImage}}">
+            <div class="one" on-click="setUploadPic" name="one">按此上載主圖</div>
+          </template>
+          <img src$="{{imgUrl}}" alt="" hidden="{{isImage}}" class="one imgWidth" name="one" on-click="setUploadPic">
+        </div>
+        <div class="img-two">
+          <div id="twoText" class="two" on-click="setUploadPic" name="two">按此圖二</div>
+          <img id="twoPic" src$="{{imgUrl2}}" on-click="setUploadPic" alt="" style="display: none;" class="two imgWidth" name="two">
+          
+          <div id="threeText" class="three" on-click="setUploadPic" name="three">按此圖三</div>
+          <img id="threePic" src$="{{imgUrl3}}" on-click="setUploadPic" alt="" style="display: none;" class="three imgWidth" name="three">
+        </div>
+        <div class="img-three">
+          <div id="fourText" class="four" on-click="setUploadPic" name="four">按此圖四</div>
+          <img id="fourPic" src$="{{imgUrl4}}" on-click="setUploadPic" alt="" style="display: none;" class="four imgWidth" name="four">
+
+          <div id="fiveText" class="five" on-click="setUploadPic" name="five">按此圖五</div>
+          <img id="fivePic" src$="{{imgUrl5}}" on-click="setUploadPic"  alt="" style="display: none;" class="five imgWidth" name="five">
+        </div>
+      </div>
+      <div class="last">
+          <div class="last-phone" on-click="goBack">
+            返回
+          </div>
+        </div>
+<!-- 裁剪图片dialog -->
+    <paper-dialog id="croppieDialog" class="dialogs" no-cancel-on-outside-click modal on-iron-overlay-closed = "_destroy">
+      <h2>请对图片进行裁剪</h2>
+      <div id="cropImgBox" style="padding: 0;width: 100%;">
+        <img id="cropImg" src$="{{cropImgSrc}}" style="max-width: 100%;max-height: 400px;"/>
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss >取消</paper-button>
+        <paper-button dialog-confirm on-click="_uploadCropImg">确定</paper-button>
+      </div>
+    </paper-dialog>
+    </div>
+<!-- 獲取圖片信息 -->
+      <iron-ajax
+        id="getOwnerFile"
+        method="GET"
+        headers = "{{token}}"
+        params = "{{token}}"
+        url = "{{setUrl('owner/getOwnerVehiclePictures')}}"
+        Content-Type="application/json"
+        on-response="_responOwner">
+      </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterUploadPicture extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-upload-picture'; }
+      static get properties() {
+        return {
+          // 判断是否存在图片
+          isImage: {
+            type: Boolean,
+            value: true
+          },
+          // 图片预览路径
+          imgUrl:{
+            type: String
+          },
+          // 图片下标
+          imgIndex: {
+            type:String
+          },
+          photoArr: {
+            type: Array
+          },
+          route:{
+            type : String,
+            observer: '_checkPage'
+          }
+          // loading: {
+          //   type: Boolean,
+          //   value: true
+          // }
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      _responOwner (e) {
+        let data = e.detail.response.imgUrlList
+        if (data[0]) {
+          this.imgUrl = data[0]
+          this.isImage = false
+        } 
+        if (data[1]) {
+          this.imgUrl2 = data[1]
+          this.$.twoText.style.display = 'none'
+          this.$.twoPic.style.display = 'block'
+        } 
+        if (data[2]) {
+          this.imgUrl3 = data[2]
+          this.$.threeText.style.display = 'none'
+          this.$.threePic.style.display = 'block'
+        }
+        if (data[3]) {
+          this.imgUrl4 = data[3]
+          this.$.fourText.style.display = 'none'
+          this.$.fourPic.style.display = 'block'
+        }
+        if (data[4]) {
+          this.imgUrl5 = data[4]
+          this.$.fiveText.style.display = 'none'
+          this.$.fivePic.style.display = 'block'
+        }
+      }
+      /**
+       * 点击图片上传
+       * @param {[type]} e [description]
+       */
+      setUploadPic(e) {
+        this.imgIndex = e.target.getAttribute('name')
+        this.$.upload.click()
+      }
+      /**
+       * 图片上传前预览
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      uploadPic(e){
+        let that = this
+        let file = e.target.files[0] || e.dataTransfer.files[0];
+        // URL.createObjectURL 实现图片上传
+        // var createObjectURL = function(blob){
+        //   return window[window.webkitURL ? 'webkitURL' : 'URL']['createObjectURL'](blob);
+        // };
+        // this.imgUrl = createObjectURL(files);
+        // FileRender
+        if(file){
+          var url = this.getObjectURL(file);
+          
+          Promise.resolve(this.cropImgSrc = url).then(res=> {
+            var el = this.$.cropImg;
+            this.vanilla = new Cropper(el, {
+              aspectRatio: 16/9,
+              cropBoxMovable: false,
+              movable : true,
+              cropBoxResizable: false,
+              dragMode: 'move'
+            })
+            this.$.croppieDialog.open();
+          })
+          // this.vanilla = el.cropper({
+          //     viewport: { width: 300, height: 200},
+          //     boundary: { width: 330, height: 300},
+          //     showZoomer: true,
+          //     enableOrientation: true
+          // });
+          // this.vanilla.bind({
+          //     url: url
+          // });
+        }
+      }
+      _destroy(){
+        if(this.vanilla){
+          this.vanilla.destroy();
+          // 清空file
+        }
+      }
+      _uploadCropImg() {
+        let that = this
+        this.vanilla.getCroppedCanvas().toBlob(files => {
+          let form = new FormData();
+          if (/^image/.test(files.type)) {
+            let reader = new FileReader()
+            reader.readAsDataURL(files)
+            reader.onloadend =  (evt) => {
+              var result = evt.target.result
+              if (that.imgIndex === 'one'){
+                form.append("file", files); // 文件对象
+                form.append("no", 1);
+                this.uploadAjax(form).then(res => {
+                  if (res.success) {
+                    that.loading = false
+                    that.imgUrl = result
+                    that.isImage = false
+                  }
+                })
+              } else if (that.imgIndex === 'two'){
+                form.append("file", files); // 文件对象
+                form.append("no", 2);
+                this.uploadAjax(form).then(res => {
+                  if (res.success) {
+                    that.imgUrl2 = result
+                    that.loading = false
+                    that.$.twoText.style.display = 'none'
+                    that.$.twoPic.style.display = 'block'
+                  }
+                })
+              } else if (that.imgIndex === 'three'){
+                form.append("file", files); // 文件对象
+                form.append("no", 3);
+                this.uploadAjax(form).then(res => {
+                   if (res.success) {
+                      that.imgUrl3 = result
+                      that.loading = false
+                      that.$.threeText.style.display = 'none'
+                      that.$.threePic.style.display = 'block'
+                   }
+                })
+              } else if (that.imgIndex === 'four'){
+                form.append("file", files); // 文件对象
+                form.append("no", 4);
+                this.uploadAjax(form).then(res => {
+                   if (res.success) {
+                      that.imgUrl4 = result
+                      that.loading = false
+                      that.$.fourText.style.display = 'none'
+                      that.$.fourPic.style.display = 'block'
+                   }
+                })
+              } else if (that.imgIndex === 'five'){
+                form.append("file", files); // 文件对象
+                form.append("no", 5);
+                this.uploadAjax(form).then(res => {
+                   if (res.success) {
+                      that.imgUrl5 = result
+                      that.loading = false
+                      that.$.fiveText.style.display = 'none'
+                      that.$.fivePic.style.display = 'block'
+                   }
+                })
+              }
+            }
+          }
+        })
+      }
+      goBack(e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path:"/seller/seller-not-start"},bubbles: true, composed: true}));
+      }
+      /**
+       * 图片上传的ajax
+       * @param  {[type]} form [description]
+       * @return {[type]}      [description]
+       */
+      uploadAjax (form) {
+        var promise = new Promise((resolve, reject)=> {
+          this.loading = true
+          var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+          xhr.open("post", this.setUrl('owner/uploadFile'), true);
+          xhr.responseType = 'json';
+          xhr.setRequestHeader('Accept', 'application/json');
+          xhr.setRequestHeader('st',this.st);
+          xhr.onreadystatechange = handler
+          xhr.send(form); //开始上传，发送form数据
+          function handler() {
+            if (this.readyState !== 4) {
+              return
+            }
+            if (this.status === 200) {
+              resolve(this.response);
+            }else {
+              reject(new Error(this.statusText))
+            }
+          }
+        })
+        return promise 
+      }
+      /**
+       * 图片上传成功回调
+       * @param  {[type]} e [description]
+       * @return {[type]}   [description]
+       */
+      uploadComplete(e) {
+        let jsonData = JSON.parse(e.target.response)
+        if (jsonData.success) {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"上传成功"},bubbles: true, composed: true}));
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"系统出错，请重新上传"},bubbles: true, composed: true}));
+        }
+      }
+      ready() {
+        super.ready()
+      }
+      _checkPage (val) {
+        if (val === 'register-upload-picture') {
+          if (window.location.toString().indexOf('?') != -1) {
+            let st = this.getViewParam().st
+            token['st'] = st
+            this.st = st
+            this.$.getOwnerFile.generateRequest()
+          } else {
+            this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+    }
+
+    window.customElements.define(RegisterUploadPicture.is, RegisterUploadPicture);
+  </script>
+</dom-module>

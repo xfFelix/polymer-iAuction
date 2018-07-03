@@ -1,0 +1,19 @@
+{
+  "name": "trunk",
+  "version": "1.0.0",
+  "description": "seller owner app",
+  "main": "index.html",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-connect": "^5.5.0",
+    "gulp-webserver": "^0.9.1"
+  }
+}

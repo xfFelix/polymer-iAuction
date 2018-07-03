@@ -1,0 +1,83 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="confirms-pop">
+  <template>
+    <style include="comment-styles">
+      .pop {
+        position: fixed;
+        border : 1px #DDDDDD solid;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        background: #FFFFFF;
+      }
+      .body {
+        font-family: PingFangTC-Medium;
+        font-size: 16px;
+        color: #000000;
+        font-weight: bold;
+        padding: 10px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .confirms{
+        display: flex;
+        justify-content: space-around;
+      }
+      .resolve,.reject {
+        margin: 20px auto;
+        height: 30px;
+        width: 35%;
+        border: 1px #4A90E2 solid;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .resolve{
+        color: #FFFFFF;
+        background: #4A90E2;
+        font-size: 14px;
+      }
+      .reject{
+        font-size: 14px;
+        color: #4A90E2;
+      }
+      .red {
+        color: #d30026;
+      }
+    </style>
+    <div class="pop">
+        <div class="title"></div>
+        <div class="body">最高出價賣家的價格是 <span class="red">$218,000</span>
+            是否接受此價格成交？</div>
+        <div class="confirms">
+            <div class="resolve">接受</div>
+            <div class="reject">不接受</div>
+        </div>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class ConfirmsPop extends Polymer.Element {
+      static get is() { return 'confirms-pop'; }
+      static get properties() {
+        return {
+            
+        };
+      }
+      static get observers(){
+        return [
+        ]
+      }
+      
+    }
+
+    window.customElements.define(ConfirmsPop.is, ConfirmsPop);
+  </script>
+</dom-module>
