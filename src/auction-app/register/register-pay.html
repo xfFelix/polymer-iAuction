@@ -79,7 +79,7 @@
       <iron-ajax
         id="getPaypal"
         method="POST"
-        url = "{{setUrl('payment/createPaypalPage')}}"
+        url = "{{setUrl('spayment/createPaypalPage')}}"
         Content-Type="application/json"
         handle-as="text"
         on-response="responsePay">
@@ -93,7 +93,7 @@
         body="{}"
         handle-as="text">
       </iron-ajax>
-      <!-- 支付寶支付 -->
+      <!-- 现场支付 -->
       <iron-ajax
         id="payNow"
         method="POST"
@@ -150,6 +150,9 @@
             this.st = st
             let mobile = await sessionStorage.mobile
             let vehicleId = await sessionStorage.vehicleId
+            this.$.getPaypal.headers = {
+              st : this.st
+            }
             this.$.getPaypal.body = {
               amount : '599',
               st: this.st,
@@ -185,6 +188,9 @@
         let mobile = await sessionStorage.mobile
         let vehicleId = await sessionStorage.vehicleId
         if(this.paymentType == 1) {
+          this.$.payAliyunMoney.headers = {
+            st : this.st
+          }
           this.$.payAliyunMoney.body = {
             amount : '499',
             st: this.st,

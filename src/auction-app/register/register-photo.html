@@ -84,7 +84,7 @@
             </div>
             <div class="photo-list">
                 <template is="dom-repeat" items="{{photos}}">
-                    <img src="{{item}}" class="upload">
+                    <img src="{{item}}" class="upload" on-click="reloadImage">
                 </template>
             </div>
             <div class="photo" on-click="setUploadPic">相冊</div>
@@ -156,6 +156,10 @@
             vehicleId: {
                 type: String,
                 value: JSON.parse(localStorage.vehicleId) || ''
+            },
+            srcReloadImage: {
+                type: String,
+                value: ''
             }
         };
       }
@@ -228,12 +232,30 @@
         _uploadCropImg () {
             this.vanilla.getCroppedCanvas().toBlob(files => {
                 let url = this.getObjectURL(files);
-                form.append('file', files)
-                this.index++
-                if (this.index <= 5) {
-                    this.splice('photos', this.index -1, 1 , url)
+                form.append('file', files);
+                //console.log("src 2 -> " + this.srcReloadImage)
+                var srcReloadImageUrl = this.srcReloadImage
+                if (this.srcReloadImage === '') {
+                    console.log("new");
+                    this.index++
+                    if (this.index <= 5) {
+                        this.splice('photos', this.index - 1, 1, url)
+                    } else {
+                        this.push('photos', url)
+                    }
                 } else {
-                    this.push('photos', url)
+                    console.log("change");
+                    var copyPhotos = this.photos;
+                    this.photos = [];
+                    var i = 0;
+                    for (i = 0; i < copyPhotos.length; i++) {
+                        if (copyPhotos[i] === srcReloadImageUrl) {
+                            this.push('photos', url)
+                        } else {
+                            this.push('photos', copyPhotos[i])
+                        }
+                    }
+                    this.srcReloadImage = '';
                 }
             })
         }
@@ -243,6 +265,17 @@
                  // 清空file
             }
         }
+
+        reloadImage(event) {
+            if (!event.target.src.includes("/images/upload.png")) {
+                this.srcReloadImage = event.target.src;
+                this.setUploadPic();
+            } else {
+                this.srcReloadImage = '';
+                this.setUploadPic();
+            }
+        }
+
         /**
        * 图片上传的ajax
        * @param  {[type]} form [description]
