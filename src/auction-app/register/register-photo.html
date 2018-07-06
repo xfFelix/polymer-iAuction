@@ -100,13 +100,13 @@
     </div>
         <!-- 裁剪图片dialog -->
         <paper-dialog id="croppieDialog" class="dialogs" no-cancel-on-outside-click modal on-iron-overlay-closed = "_destroy">
-            <h2>请对图片进行裁剪</h2>
+            <h2>編輯圖片</h2>
             <div id="cropImgBox" style="padding: 0;width: 100%;">
               <img id="cropImg" src$="{{cropImgSrc}}" style="max-width: 100%;max-height: 400px;"/>
             </div>
             <div class="buttons">
               <paper-button dialog-dismiss >取消</paper-button>
-              <paper-button dialog-confirm on-click="_uploadCropImg">确定</paper-button>
+              <paper-button dialog-confirm on-click="_uploadCropImg">確定</paper-button>
             </div>
         </paper-dialog>
         <!-- 保存 -->
@@ -196,7 +196,7 @@
           form.append('vehicleId', this.vehicleId)
           let res = await this.uploadAjax()
           if (res.success) {
-              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '上传成功'}, bubbles: true, composed: true}))
+              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '上傳成功'}, bubbles: true, composed: true}))
               let result = await this.$.getVehicleImages.generateRequest().completes
               let imgUrlList = result.response.imgUrlList
               this.initPic(imgUrlList)

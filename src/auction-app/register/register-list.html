@@ -58,7 +58,7 @@
             </div>
             <div class="title-btn">
                 <h4>預約拍賣日期</h4>
-                <div class="confirm" on-click="changeDate">确定</div>
+                <div class="confirm" on-click="changeDate">確定</div>
             </div>
             <hr/>
             <div class="date-body">
@@ -193,7 +193,7 @@
           }
           let res = await this.$.updateReverseDate.generateRequest().completes
           if (res.response) {
-              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '修改時間成功'}, bubbles: true, composed: true}))
+              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '預約成功'}, bubbles: true, composed: true}))
               let owner = await this.$.getOwnerList.generateRequest().completes
               this.name = owner.response.name
               this.mobile = owner.response.mobile
