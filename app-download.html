@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <script>
+      (function(){
+        var platform = navigator.platform,
+        
+            ios = 'https://itunes.apple.com/us/app/iauction/id1401808248?l=zh&ls=1&mt=8',
+            android = 'https://play.google.com/store/apps/details?id=iauction.ilinkedtech.com',
+            path = ''
+            console.log(platform)
+        if( platform === 'iPhone' ||
+            platform === 'iPod' ||
+            platform ==='iPad' ||
+            platform === 'iPhone Simulator' ||
+            platform === 'iPod Simulator' ||
+            platform === 'iPad Simulator' ||
+            platform === 'Macintosh' ||
+            platform === 'MacIntel' ||
+            platform === 'MacPPC' ||
+            platform === 'Mac68K' ||
+            platform === 'Pike v7.6 release 92' ||
+            platform === 'Pike v7.8 release 517'){
+              path = ios
+            }else{
+              path = android
+            }
+        window.location = path;
+      })()
+    </script>
+  </body>
+</html>
