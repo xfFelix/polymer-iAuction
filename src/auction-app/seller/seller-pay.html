@@ -79,7 +79,7 @@
         id="getPaypal"
         method="POST"
         headers= "{{token}}"
-        url = "{{setUrl('payment/createPaypalPageAfterAuction')}}"
+        url = "{{setUrl('spayment/createPaypalPageAfterAuction')}}"
         Content-Type="application/json"
         handle-as="text"
         on-response="responsePay">
@@ -89,7 +89,7 @@
         id="payAliyunMoney"
         method="POST"
         headers= "{{token}}"
-        url = "{{setUrl('payment/createAliPayPageAfterAuction')}}"
+        url = "{{setUrl('spayment/createAliPayPageAfterAuction')}}"
         Content-Type="application/json"
         body="{}"
         handle-as="text">

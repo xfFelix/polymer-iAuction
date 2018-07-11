@@ -88,7 +88,7 @@
       <iron-ajax
         id="payAliyunMoney"
         method="POST"
-        url = "{{setUrl('payment/createAliPayPage')}}"
+        url = "{{setUrl('spayment/createAliPayPage')}}"
         Content-Type="application/json"
         body="{}"
         handle-as="text">
@@ -97,7 +97,7 @@
       <iron-ajax
         id="payNow"
         method="POST"
-        url = "{{setUrl('payment/completePaymentOnSite')}}"
+        url = "{{setUrl('spayment/completePaymentOnSite')}}"
         Content-Type="application/json"
         body="{}"
         handle-as="json">
@@ -207,6 +207,9 @@
         } else if (this.paymentType == 2) {
           this.shadowRoot.querySelector('form').submit()
         } else if (this.paymentType == 3) {
+          this.$.payNow.headers = {
+            st: this.st
+          }
           this.$.payNow.body = {
             vehicleId: vehicleId
           }
