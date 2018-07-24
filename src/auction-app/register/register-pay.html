@@ -38,7 +38,7 @@
 
       <div class="list_right">
       優惠價
-      <div class="price">$499</div></div>
+      <div class="price">${{payAli}}</div></div>
       </div>
 
 
@@ -52,7 +52,7 @@
 
       <div class="list_right">
       優惠價
-      <div class="price">$599</div></div>
+      <div class="price">${{payPal}}</div></div>
       </div>
       <div class="list">
           <div class="list_left">
@@ -63,7 +63,7 @@
           </div>
           <div class="list_right">
             正價
-            <div class="price2">$699</div>
+            <div class="price2">${{payOnSite}}</div>
           </div>
         </div>
 
@@ -74,6 +74,15 @@
     </div>
     <!--  -->
     <div class="payAliyunForm" id="payAliyunForm" style="display: none;"></div>
+
+      <!-- 获取价格 -->
+      <iron-ajax
+        id="getPrice"
+        method="GET"
+        url = "{{setUrl('public/seller/paymentMethod')}}"
+        Content-Type="application/json"
+        on-response="_responsePrice">
+      </iron-ajax>
 
       <!-- paypal -->
       <iron-ajax
@@ -144,6 +153,10 @@
        */
       async _checkPage (e) {
         if (e === 'register-pay') {
+          this.$.getPrice.params= {
+            role: 'owner'
+          }
+          this.$.getPrice.generateRequest()
           if (window.location.toString().indexOf('?') != -1) {
             let st = this.getViewParam().st
             token['st'] = st
@@ -154,7 +167,7 @@
               st : this.st
             }
             this.$.getPaypal.body = {
-              amount : '599',
+              amount : this.payPal,
               st: this.st,
               role: 'owner',
               mobile: mobile,
@@ -172,6 +185,18 @@
       responsePay (e) {
         let data = e.detail.response
         this.$.payAliyunForm.innerHTML = data
+      }
+      _responsePrice (e) {
+        let data = e.detail.response
+        for(let payment of data) {
+          if (payment.paymentId === '0') {
+            this.payOnSite = payment.paymentAmount
+          } else if(payment.paymentId === '1') {
+            this.payAli = payment.paymentAmount
+          } else {
+            this.payPal = payment.paymentAmount
+          }
+        }
       }
       /**
        * 下一步 button
@@ -192,7 +217,7 @@
             st : this.st
           }
           this.$.payAliyunMoney.body = {
-            amount : '499',
+            amount : this.payAli,
             st: this.st,
             role: 'owner',
             mobile: mobile,

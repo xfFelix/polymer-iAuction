@@ -1,0 +1,91 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="register-sms">
+  <template>
+    <style include = "comment-styles">
+        #button{
+          margin-top: 300px;
+        }
+        .line{
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          width: 90%;
+          margin: 50px auto 0 auto;
+        }
+        .input{
+          width: 70%;
+          box-sizing: border-box;
+        }
+    </style>
+   
+    <div>
+        <div id="container">
+            <img class="header_img" src="../../../images/banner.jpg"/>
+              <h4 style="text-align: center;">重新發送驗證碼</h4>
+      
+              <div class="line">
+                手機號碼：<vaadin-text-field class="input" value="{{mobile}}">
+                </vaadin-text-field>
+              </div>
+      
+            
+              <div id="button" on-click="goNext">提交</div>
+            </div>
+    </div>
+    <iron-ajax
+      id="getSms"
+      method="POST"
+      url = "{{setUrl('public/seller/requestLoginSMS')}}"
+      Content-Type="application/json"
+      on-response="_responSMS">
+    </iron-ajax>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RegisterSms extends AuctionMixin(Polymer.Element) {
+      static get is() { return 'register-sms'; }
+      static get properties() {
+        return {
+        };
+      }
+      static get observers(){
+        return [
+
+        ]
+      }
+      _responSMS (e) {
+        let data = e.detail.response
+        if (data.success) {
+          this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '發送成功'}, bubbles: true, composed: true}))
+          this.mobile = ''
+          setTimeout (()=> {
+            this.dispatchEvent(new CustomEvent('toastOut', {detail: {}, bubbles: true, composed: true}))
+            history.back()
+          }, 2000)
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '發送失敗'}, bubbles: true, composed: true}))
+        }
+      }
+      goNext () {
+        if (!this.mobile) {return this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '請輸入手機號'}, composed: true, bubbles: true}))}
+        if (this.isPoneAvailable(this.mobile)) {
+          this.$.getSms.body = {
+            mobile: this.mobile
+          }
+          this.$.getSms.generateRequest()
+        } else {
+          this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '請輸入正確的手提號'}, bubbles: true, composed: true}))
+          this.mobile = ''
+        }
+      }
+    }
+
+    window.customElements.define(RegisterSms.is, RegisterSms);
+  </script>
+</dom-module>

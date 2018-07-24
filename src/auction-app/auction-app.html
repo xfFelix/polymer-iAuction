@@ -114,6 +114,7 @@
         <register-page page="register" view$= "{{routeData.view}}" sub-route$="{{subData.subroute}}"></register-page>
         <seller-page page="seller" view$= "{{routeData.view}}" sub-route$="{{subData.subroute}}"></seller-page>
         <admin-page page="admin" view$= "{{routeData.view}}" sub-route$="{{subData.subroute}}" uid="{{idData.uid}}"></admin-page>
+        <error-page page="error" view$="{{routeData.view}}" sub-route$="{{subData.subroute}}"></error-page>
       </iron-pages>
     </div>
     <footer>
@@ -184,9 +185,13 @@
       listenToastOut (e) {
         this.$.toastDialog.close()
       }
+      listernLoginFail (e) {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail:{path: 'error/error-page'},bubbles: true, composed: true}));
+      }
       ready() {
         super.ready();
         this.addEventListener('pathchange', this.listenRoute);
+        this.addEventListener('login-fail', this.listernLoginFail)
         // 提示消息
         this.addEventListener('confirm', this.listenConfirm);
         this.addEventListener('toast', this.listenToast);

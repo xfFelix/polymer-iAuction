@@ -3,221 +3,450 @@
 <link rel="import" href="../components/register-header.html">
 
 <dom-module id="register-photo">
-  <template>
-    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.3.6/cropper.css" rel="stylesheet">
-    <style include="comment-styles">
-      .slider_car{
-        align-items: center;
-      }
-      #button {
-          /* position: fixed; */
-          bottom: 40px;
-          left: 5%;
-      }
-      .photo-list{
-          overflow-x: scroll;
-          white-space: nowrap;
-      }
-      .upload{
-          width: 90px;
-          height: 50px;
-          margin-top: 20px;
-          margin-left: 9px;
-          box-sizing: border-box;
-      }
-      .photo{
-        left: 5%;
-        text-align: center;
-        line-height: 50px;
-        color: #fff;
-        height: 50px;
-        background-color: #F5A623;
-        margin: 10px auto;
-        border-radius: 4px;
-        /* position: fixed; */
-        margin-top: 100px;
-        bottom: 100px;
-        left: 5%;
-        width: 90%;
-      }
-      l2t-paper-slider{
-          min-height: 300px;
-          --paper-slide-height:300px;
-          --paper-slide-dot:#aba8a8;
-          --paper-slide-dot-selected:#fff;
-      }
-      paper-slide img{
-          width: 100%;
-          height:250px;
-      }
-      .dialogs{
-        outline: none;
-        position: fixed;
-        /* top: 187.203px; */
-        /* left: 36px; */
-        box-sizing: border-box;
-        max-height: 592px;
-        z-index: 103;
-        width: 95%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-        height: auto;
-        max-width: none !important;
-        margin: 0;
-      }
-    </style>
-    <register-header title="修改資料" is-back="{{isBack}}"></register-header>
-    <div>
-        <div id="container">
-            <div class="swipe-list">
-                <div class="swipe">
-                    <!-- <img src="../../../images/u556.jpg" alt="" class="swipe-pic"> -->
-                    <l2t-paper-slider slide-duration="2" total-slides="[[imgUrlList.length]]">
-                        <template is="dom-repeat" items="{{imgUrlList}}">
-                            <paper-slide>
-                                <img class="slider_car" src="{{item}}">
-                            </paper-slide>
-                        </template>
-                    </l2t-paper-slider>
-                </div>
-            </div>
-            <div class="photo-list">
-                <template is="dom-repeat" items="{{photos}}">
-                    <img src="{{item}}" class="upload" on-click="reloadImage">
-                </template>
-            </div>
-            <div class="photo" on-click="setUploadPic">相冊</div>
+    <template>
+        <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.3.6/cropper.css" rel="stylesheet">
+        <style include="comment-styles">
+            .slider_car{
+                align-items: center;
+            }
+            #button {
+                /* position: fixed; */
+                bottom: 40px;
+                left: 5%;
+            }
+            .loader {
+                border: 16px solid #f3f3f3; /* Light grey */
+                border-top: 16px solid red; /* Blue */
+                border-radius: 50%;
+                width: 120px;
+                height: 120px;
+                animation: spin 2s linear infinite;
+            }
 
-            <div id="button" on-click="goNext">確認修改</div>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
 
-            <!-- <template is="dom-if" if="{{!isNext}}">
-                <div id="button" style="background-color: #797979;">確認修改</div>
-            </template> -->
+            .overlay {
+                position: fixed; /* Sit on top of the page content */
+                display: block; /* Hidden by default */
+                width: 100%;
+                height: 100%; /* Full height (cover the whole page) */
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+                z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+                cursor: pointer; /* Add a pointer on hover */
+                text-align: center;
+            }
+
+            .overlay-content{
+                position: relative;
+                top: 45%;
+                /*left: 50%;*/
+                margin: auto;
+                transform: translate(-50%,50%);
+                -ms-transform: translate(-50%,50%);
+            }
+
+            .photo-list{
+                overflow-x: scroll;
+                white-space: nowrap;
+            }
+            .upload{
+                width: 90px;
+                height: 50px;
+                margin-top: 20px;
+                margin-left: 9px;
+                box-sizing: border-box;
+            }
+            .photo{
+                left: 5%;
+                text-align: center;
+                line-height: 50px;
+                color: #fff;
+                height: 50px;
+                background-color: #F5A623;
+                margin: 10px auto;
+                border-radius: 4px;
+                /* position: fixed; */
+                margin-top: 100px;
+                bottom: 100px;
+                left: 5%;
+                width: 90%;
+            }
+            l2t-paper-slider{
+                min-height: 300px;
+                --paper-slide-height:300px;
+                --paper-slide-dot:#aba8a8;
+                --paper-slide-dot-selected:#fff;
+            }
+            paper-slide img{
+                width: 100%;
+                height:250px;
+            }
+            .dialogs{
+                outline: none;
+                position: fixed;
+                /* top: 187.203px; */
+                /* left: 36px; */
+                box-sizing: border-box;
+                max-height: 592px;
+                z-index: 103;
+                width: 95%;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                height: auto;
+                max-width: none !important;
+                margin: 0;
+            }
+            .parent {
+                position: relative;
+            }
+
+            .child1 {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                z-index: 110;
+            }
+
+            .child2 {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                z-index: 110;
+            }
+        </style>
+        <register-header title="修改資料" is-back="{{isBack}}"></register-header>
+        <div class="overlay" width="" id="loadingScreen" style="display: {{loadingScreenCheck}};">
+            <div class="overlay-content loader" ></div>
+            <!--<div class="photo" on-click="endLoading">Unload</div>-->
         </div>
-        <input hidden="true" enctype="multipart" type="file" id="upload" accept="image" on-change="uploadPic">
+        <div>
+            <div id="container" id="contentScreen">
+                <div class="parent">
+                    <div class="child1" style="text-align: right">
+                        <!--<a href="www.google.com" >ADD</a>-->
+                    </div>
+                    <div class="child2" style="text-align: right;">
+                        <span style="background-color: lightgray">&nbsp;{{addOne(imageSlidePosition)}} / {{imgUrlList.length}}&nbsp;</span>
+                    </div>
+                </div>
 
-    </div>
+                <div class="swipe-list">
+                    <div class="swipe">
+                        <!-- <img src="../../../images/u556.jpg" alt="" class="swipe-pic"> -->
+                        <l2t-paper-slider hide-nav slide-duration="2" total-slides="[[imgUrlList.length]]" position="{{imageSlidePosition}}">
+                            <template is="dom-repeat" items="{{imgUrlList}}">
+                                <paper-slide>
+                                    <img class="slider_car" src="{{item}}" on-click="reloadImage">
+                                </paper-slide>
+                            </template>
+                        </l2t-paper-slider>
+                    </div>
+                </div>
+
+                <div class="photo-list" style="display: none">
+                    <template is="dom-repeat" items="{{photos}}">
+                        <img src="{{item}}" class="upload" on-click="reloadImage">
+                    </template>
+                </div>
+
+                <!--<div class="photo" on-click="showLoading">Load</div>-->
+
+                <!--<div class="photo" on-click="setUploadPic">相冊</div>-->
+
+                <div id="button" on-click="goNext">確認修改</div>
+
+                <!-- <template is="dom-if" if="{{!isNext}}">
+                    <div id="button" style="background-color: #797979;">確認修改</div>
+                </template> -->
+            </div>
+            <input hidden="true" enctype="multipart" type="file" id="upload" accept="image" on-change="uploadPic">
+
+        </div>
         <!-- 裁剪图片dialog -->
         <paper-dialog id="croppieDialog" class="dialogs" no-cancel-on-outside-click modal on-iron-overlay-closed = "_destroy">
-            <h2>編輯圖片</h2>
+            <h2>请对图片进行裁剪</h2>
             <div id="cropImgBox" style="padding: 0;width: 100%;">
-              <img id="cropImg" src$="{{cropImgSrc}}" style="max-width: 100%;max-height: 400px;"/>
+                <img id="cropImg" src$="{{cropImgSrc}}" style="max-width: 100%;max-height: 400px;"/>
             </div>
             <div class="buttons">
-              <paper-button dialog-dismiss >取消</paper-button>
-              <paper-button dialog-confirm on-click="_uploadCropImg">確定</paper-button>
+                <paper-button dialog-dismiss >取消</paper-button>
+                <paper-button dialog-confirm on-click="_uploadCropImg">确定</paper-button>
             </div>
         </paper-dialog>
         <!-- 保存 -->
-    <iron-ajax
-        id="getVehicleImages"
-        method="GET"
-        headers = "{{token}}"
-        url = "{{setUrl('owner/getVehicleImages')}}"
-        Content-Type="application/json">
-    </iron-ajax>
-  </template>
+        <iron-ajax
+                id="getVehicleImages"
+                method="GET"
+                headers = "{{token}}"
+                url = "{{setUrl('owner/getVehicleImages')}}"
+                Content-Type="application/json">
+        </iron-ajax>
 
-  <script>
-    /**
-     * @customElement
-     * @polymer
-     */
-    let form = new FormData()
-    class RegisterPhoto extends AuctionMixin(Polymer.Element) {
-      static get is() { return 'register-photo'; }
-      static get properties() {
-        return {
-            isBack: {
-                type: Boolean,
-                value: true
-            },
-            isNext: {
-              type: Boolean,
-              value: false
-            },
-            route: {
-              type: String,
-              observer: 'checkRoute'
-            },
-            imgUrlList: {
-                type: Array,
-                value: ['/images/tutorial01.jpg','/images/tutorial02.jpg','/images/tutorial03.jpg','/images/tutorial04.jpg','/images/tutorial05.jpg']
-            },
-            photos:{
-                type: Array,
-                value: ['/images/upload.png','/images/upload.png','/images/upload.png','/images/upload.png','/images/upload.png']
-            },
-            index: {
-                type: Number,
-                value: 0
-            },
-            vehicleId: {
-                type: String,
-                value: JSON.parse(localStorage.vehicleId) || ''
-            },
-            srcReloadImage: {
-                type: String,
-                value: ''
+        <iron-ajax
+                id="fileUpload"
+                method="POST"
+                headers = "{{token}}"
+                url = "{{setUrl('owner/uploadFile')}}"
+                Content-Type="application/json">
+        </iron-ajax>
+    </template>
+
+    <script>
+        /**
+         * @customElement
+         * @polymer
+         */
+        let form = new FormData()
+        class RegisterPhoto extends AuctionMixin(Polymer.Element) {
+            static get is() { return 'register-photo'; }
+            static get properties() {
+                return {
+                    isBack: {
+                        type: Boolean,
+                        value: true
+                    },
+                    isNext: {
+                        type: Boolean,
+                        value: false
+                    },
+                    route: {
+                        type: String,
+                        observer: 'checkRoute'
+                    },
+                    imgUrlList: {
+                        type: Array,
+                        value: ['/images/tutorial01.jpg','/images/tutorial02.jpg','/images/tutorial03.jpg','/images/tutorial04.jpg','/images/tutorial05.jpg','/images/upload.png']
+                    },
+                    photos:{
+                        type: Array,
+                        value: ['/images/upload.png','/images/upload.png','/images/upload.png','/images/upload.png','/images/upload.png']
+                    },
+                    index: {
+                        type: Number,
+                        value: 0
+                    },
+                    loadingScreenCheck: {
+                        type: String,
+                        value: 'none'
+                    },
+                    vehicleId: {
+                        type: String
+                    },
+                    srcReloadImage: {
+                        type: String,
+                        value: ''
+                    }
+                };
             }
-        };
-      }
-      static get observers(){
-        return [
-        ]
-      }
-      async checkRoute(route) {
-        if (route === 'register-photo') {
-            if (window.location.toString().indexOf('?') != -1) {
-                let st = this.getViewParam().st
-                token['st'] = st
-                this.st = st
-                this.$.getVehicleImages.params = {
-                    vehicleId: this.vehicleId
+            static get observers(){
+                return [
+                ]
+            }
+            addOne (number) {
+                return parseInt(number) + 1
+            }
+            async checkRoute(route) {
+                if (route === 'register-photo') {
+                    if (window.location.toString().indexOf('?') != -1) {
+                        let st = this.getViewParam().st
+                        token['st'] = st
+                        this.st = st
+                        this.vehicleId = await JSON.parse(localStorage.vehicleId)
+                        this.$.getVehicleImages.params = {
+                            vehicleId: this.vehicleId,
+                            st: this.st
+                        }
+                        let res = await this.$.getVehicleImages.generateRequest().completes
+                        let imgUrlListFromServer = res.response.imgUrlList
+                        this.initPic(imgUrlListFromServer)
+                    } else {
+                        this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+                    }
                 }
-                let res = await this.$.getVehicleImages.generateRequest().completes
-                let imgUrlList = res.response.imgUrlList
-                this.initPic(imgUrlList)
-            } else {
-                this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
             }
-        }
-      }
-      initPic(imgUrlList) {
-        this.index = imgUrlList.length
-        if (this.index <= 5) {
-            this.splice('photos', 0, this.index, ...imgUrlList)
-        } else {
-            this.photos = imgUrlList
-        }
-      }
-      async goNext () {
-          form.append('vehicleId', this.vehicleId)
-          let res = await this.uploadAjax()
-          if (res.success) {
-              this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '上傳成功'}, bubbles: true, composed: true}))
-              let result = await this.$.getVehicleImages.generateRequest().completes
-              let imgUrlList = result.response.imgUrlList
-              this.initPic(imgUrlList)
-          } else {
-              this.dispatchEvent(new CustomEvent('toast'))
-          }
-      }
-      setUploadPic() {
-        this.$.upload.click()
-      }
-      /**
-       * 图片上传前预览
-       * @param  {[type]} e [description]
-       * @return {[type]}   [description]
-       */
-        uploadPic(e){
-            let that = this
-            let file = e.target.files[0] || e.dataTransfer.files[0];
-            var url = this.getObjectURL(file);
-            Promise.resolve(this.cropImgSrc = url).then(res=> {
-                var el = this.$.cropImg;
+            initPic(imgUrlListFromServer) {
+                this.index = imgUrlListFromServer.length
+                if (this.index <= 5) {
+                    this.splice('imgUrlList', 0, this.index, ...imgUrlList)
+
+                } else {
+                    this.imgUrlList = imgUrlListFromServer
+                }
+
+                if (this.index < 20) {
+                    this.push('imgUrlList', '/images/upload.png')
+                }
+            }
+            async goNext () {
+                form.set('vehicleId', this.vehicleId)
+                console.log("goNext");
+
+                var MyRequestsCompleted = (function() {
+                    var numRequestToComplete,
+                        requestsCompleted,
+                        callBacks,
+                        singleCallBack;
+
+                    return function(options) {
+                        if (!options) options = {};
+
+                        numRequestToComplete = options.numRequest || 0;
+                        requestsCompleted = options.requestsCompleted || 0;
+                        callBacks = [];
+                        var fireCallbacks = function () {
+                            /* alert("we're all complete") */;
+                            for (var i = 0; i < callBacks.length; i++) callBacks[i]();
+                        };
+                        if (options.singleCallback) callBacks.push(options.singleCallback);
+
+
+
+                        this.addCallbackToQueue = function(isComplete, callback) {
+                            if (isComplete) requestsCompleted++;
+                            if (callback) callBacks.push(callback);
+                            if (requestsCompleted == numRequestToComplete) fireCallbacks();
+                        };
+                        this.requestComplete = function(isComplete) {
+                            if (isComplete) requestsCompleted++;
+                            if (requestsCompleted == numRequestToComplete) fireCallbacks();
+                        };
+                        this.setCallback = function(callback) {
+                            callBacks.push(callBack);
+                        };
+                    };
+                })();
+
+                this.showLoading();
+
+                var copyPhotos = this.imgUrlList;
+                var imageCount = copyPhotos.length;
+                if (copyPhotos[copyPhotos.length-1] === "/images/upload.png") {
+                    imageCount = copyPhotos.length - 1
+                }
+
+                var dataArray = new Array(imageCount);
+                var targetImageWidth = 200;
+
+                var that = this;
+                var sttoken = this.st;
+                var requestCallback = new MyRequestsCompleted({
+                    numRequest: imageCount,
+                    singleCallback: function(){
+                        alert( "I'm the callback v8");
+
+                        for (var n = 0; n < dataArray.length; n++) {
+                            form.append('file', dataArray[n]);
+                        }
+
+                        console.log(dataArray);
+                        console.log("-----");
+
+                        console.log(form.get("file"));
+                        console.log(form.get("vehicleId"));
+
+                        console.log(sttoken);
+
+                        var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+                        xhr.open("post", that.setUrl('owner/uploadFile?st='+sttoken), true);
+                        xhr.responseType = 'json';
+                        xhr.setRequestHeader('Accept', 'application/json');
+                        xhr.setRequestHeader('st',sttoken);
+                        xhr.onreadystatechange = handler
+                        xhr.send(form); //开始上传，发送form数据
+                        function handler() {
+                            if (this.readyState !== 4) {
+                                return
+                            }
+                            if (this.status === 200) {
+                                that.endLoading();
+                                console.log("successsssssss")
+                                // resolve(this.response);
+                            }else {
+                                that.endLoading();
+                                // reject(new Error(this.statusText))
+                            }
+                        }
+
+                    }
+                });
+
+                var i;
+                var imageArray = [];
+                for (i = 0; i < imageCount; i++) {
+                    // console.log("==== " + i)
+                    imageArray.push(new Image());
+                    imageArray[i].crossOrigin = "Anonymous";
+
+                    imageArray[i].onload = function () {
+                        // console.log("=i     = " + i)
+                        // console.log(this.src)
+                        // console.log(copyPhotos)
+                        var targetIndex;
+                        for (var j = 0; j < copyPhotos.length; j++) {
+                            if (this.src.includes(copyPhotos[j])) {
+                                targetIndex = j
+                            }
+                        }
+
+                        var canvas = document.createElement('canvas');
+                        canvas.width = targetImageWidth; // or 'width' if you want a special/scaled size
+                        canvas.height = (targetImageWidth/16)*9; // or 'height' if you want a special/scaled size
+
+                        canvas.getContext('2d').drawImage(this, 0, 0, targetImageWidth, (targetImageWidth/16)*9);
+
+                        canvas.toBlob((blob) => {
+                            // console.log(targetIndex + ' -> ')
+                            // console.log(blob)
+                            dataArray[targetIndex] = blob
+                            requestCallback.requestComplete(true);
+                    });
+
+                        // console.log(canvas.toDataURL())
+
+                    }
+
+                    // console.log("====== " + i)
+                    imageArray[i].src = this.imgUrlList[i]
+
+                }
+
+
+                /*let res = await this.uploadAjax()
+                // this.endLoading();
+                if (res.success) {
+                    this.dispatchEvent(new CustomEvent('toast', {detail: {msg: '上传成功'}, bubbles: true, composed: true}))
+                    let result = await this.$.getVehicleImages.generateRequest().completes
+                    let imgUrlList = result.response.imgUrlList
+                    this.initPic(imgUrlList)
+                } else {
+                    this.dispatchEvent(new CustomEvent('toast'))
+                }
+                this.endLoading();*/
+            }
+
+            setUploadPic() {
+                this.$.upload.click();
+            }
+            /**
+             * 图片上传前预览
+             * @param  {[type]} e [description]
+             * @return {[type]}   [description]
+             */
+            uploadPic(e){
+                let that = this
+                let file = e.target.files[0] || e.dataTransfer.files[0];
+                console.log(file)
+                var url = this.getObjectURL(file);
+                Promise.resolve(this.cropImgSrc = url).then(res=> {
+                    var el = this.$.cropImg;
                 this.vanilla = new Cropper(el, {
                     aspectRatio: 16/9,
                     cropBoxMovable: false,
@@ -227,84 +456,113 @@
                 })
                 this.$.croppieDialog.open();
             })
-            
-        }
-        _uploadCropImg () {
-            this.vanilla.getCroppedCanvas().toBlob(files => {
+
+            }
+            _uploadCropImg () {
+                console.log("crop");
+
+                this.vanilla.getCroppedCanvas().toBlob(files => {
+                    console.log("in");
+
+                console.log(files);
                 let url = this.getObjectURL(files);
-                form.append('file', files);
+                // form.append('file', files);
                 //console.log("src 2 -> " + this.srcReloadImage)
                 var srcReloadImageUrl = this.srcReloadImage
                 if (this.srcReloadImage === '') {
                     console.log("new");
-                    this.index++
-                    if (this.index <= 5) {
-                        this.splice('photos', this.index - 1, 1, url)
-                    } else {
-                        this.push('photos', url)
+                    var copyPhotos = this.imgUrlList;
+                    this.imgUrlList = [];
+                    var i = 0;
+                    for (i = 0; i < copyPhotos.length; i++) {
+                        if ((i+1) == copyPhotos.length) {
+                            this.push('imgUrlList', url)
+                            if (i+1 < 20) {
+                                this.push('imgUrlList', '/images/upload.png')
+                            }
+                        } else {
+                            this.push('imgUrlList', copyPhotos[i])
+                        }
                     }
                 } else {
                     console.log("change");
-                    var copyPhotos = this.photos;
-                    this.photos = [];
+                    var copyPhotos = this.imgUrlList;
+                    this.imgUrlList = [];
                     var i = 0;
                     for (i = 0; i < copyPhotos.length; i++) {
-                        if (copyPhotos[i] === srcReloadImageUrl) {
-                            this.push('photos', url)
+                        if (srcReloadImageUrl.includes(copyPhotos[i])) {
+                            this.push('imgUrlList', url)
                         } else {
-                            this.push('photos', copyPhotos[i])
+                            this.push('imgUrlList', copyPhotos[i])
                         }
                     }
                     this.srcReloadImage = '';
                 }
+                // this.endloading();
             })
-        }
-        _destroy(){
-            if(this.vanilla){
-                this.vanilla.destroy();
-                 // 清空file
             }
-        }
-
-        reloadImage(event) {
-            if (!event.target.src.includes("/images/upload.png")) {
-                this.srcReloadImage = event.target.src;
-                this.setUploadPic();
-            } else {
-                this.srcReloadImage = '';
-                this.setUploadPic();
-            }
-        }
-
-        /**
-       * 图片上传的ajax
-       * @param  {[type]} form [description]
-       * @return {[type]}      [description]
-       */
-        uploadAjax () {
-            var promise = new Promise((resolve, reject)=> {
-                var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
-                xhr.open("post", this.setUrl('owner/uploadFile'), true);
-                xhr.responseType = 'json';
-                xhr.setRequestHeader('Accept', 'application/json');
-                xhr.setRequestHeader('st',this.st);
-                xhr.onreadystatechange = handler
-                xhr.send(form); //开始上传，发送form数据
-                function handler() {
-                    if (this.readyState !== 4) {
-                        return
-                    }
-                    if (this.status === 200) {
-                        resolve(this.response);
-                    }else {
-                        reject(new Error(this.statusText))
-                    }
+            _destroy(){
+                if(this.vanilla){
+                    this.vanilla.destroy();
+                    // 清空file
                 }
-            })
-            return promise 
-        }
-    }
+            }
 
-    window.customElements.define(RegisterPhoto.is, RegisterPhoto);
-  </script>
+            reloadImage(event) {
+                console.log("reload");
+                console.log(event.target.src);
+                if (!event.target.src.includes("/images/upload.png")) {
+                    this.srcReloadImage = event.target.src;
+                    // this.setUploadPic();
+                    console.log("reload done 1");
+                } else {
+                    this.srcReloadImage = '';
+                    // this.setUploadPic();
+                    console.log("reload done 2");
+                }
+                this.$.upload.click()
+            }
+
+            /**
+             * 图片上传的ajax
+             * @param  {[type]} form [description]
+             * @return {[type]}      [description]
+             */
+            async uploadAjax () {
+                var promise = new Promise((resolve, reject)=> {
+                    // var xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+                    // xhr.open("post", this.setUrl('owner/uploadFile'), true);
+                    // xhr.responseType = 'json';
+                    // xhr.setRequestHeader('Accept', 'application/json');
+                    // xhr.setRequestHeader('st',this.st);
+                    // xhr.onreadystatechange = handler
+                    // xhr.send(form); //开始上传，发送form数据
+                    // function handler() {
+                    //     if (this.readyState !== 4) {
+                    //         return
+                    //     }
+                    //     if (this.status === 200) {
+                    //         resolve(this.response);
+                    //     }else {
+                    //         reject(new Error(this.statusText))
+                    //     }
+                    // }
+                })
+                return promise
+            }
+
+            showLoading() {
+                console.log('show loading')
+                this.loadingScreenCheck = "block"
+
+            }
+
+            endLoading() {
+                console.log('end loading')
+                this.loadingScreenCheck = "none"
+            }
+        }
+
+        window.customElements.define(RegisterPhoto.is, RegisterPhoto);
+    </script>
 </dom-module>

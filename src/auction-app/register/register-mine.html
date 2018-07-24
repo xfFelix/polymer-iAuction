@@ -91,6 +91,14 @@
       .v-textfield{
         background: #ffffff;
       }
+      .sms {
+        color: #4a90e2;
+        display: flex;
+      }
+      .sms .text {
+        margin: auto;
+        width: auto;
+      }
     </style>
     <register-header title="{{title}}" is-back="{{isBack}}"></register-header>
     <div style="box-sizing: border-box;">
@@ -191,6 +199,11 @@
         <template is="dom-if" if="{{!isNext}}">
             <div id="button" style="background-color: #797979;">提交登記</div>
         </template>
+        <div class="sms">
+          <p class="text" on-click="goSendSMS">
+            找不到驗證短訊了
+          </p>
+        </div>
         </div>
 
     </div>
@@ -394,6 +407,9 @@
           return this.smsAccessCode = ''
         }
       }
+      goSendSMS () {
+        this.dispatchEvent(new CustomEvent('pathchange', {detail: {path: 'register/register-sms'}, composed: true, bubbles: true}))
+      }
       /**
        * 获取验证码
        * @param  {[type]} e [description]
@@ -569,7 +585,7 @@
           this.$.checkRegister.body.email = this.email
         }
         let res = await this.$.checkRegister.generateRequest().completes
-        if (res.response) {
+        if (res.response.success) {
           localStorage.st = res.response.token
           this.dispatchEvent(new CustomEvent('pathchange', {detail:{path: 'register/register-success'}, bubbles: true, composed: true}))
         }

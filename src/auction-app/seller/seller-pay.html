@@ -37,7 +37,7 @@
       </div>
 
       <div class="list_right">
-      <div class="price" style="margin-top: 10px;">$100</div></div>
+      <div class="price" style="margin-top: 10px;">${{payAliPrice}}</div></div>
       </div>
 
 
@@ -50,7 +50,7 @@
       </div>
 
       <div class="list_right">
-      <div class="price" style="margin-top: 10px;">$100</div></div>
+      <div class="price" style="margin-top: 10px;">${{payPalPrice}}</div></div>
       </div>
 
       <!-- <div class="list">
@@ -93,6 +93,16 @@
         Content-Type="application/json"
         body="{}"
         handle-as="text">
+      </iron-ajax>
+      <!-- 获取支付价格 -->
+      <iron-ajax
+        id="getPrice"
+        method="GET"
+        headers= "{{token}}"
+        url = "{{setUrl('owner/getAfterAuctionPaymentMethod')}}"
+        Content-Type="application/json"
+        on-response="responsePrice"
+        body="{}">
       </iron-ajax>
       <!-- 现场支付 -->
       <!-- <iron-ajax
@@ -151,6 +161,10 @@
             this.st = st
             this.vehicleId = await JSON.parse(localStorage.vehicleId)
             this.recordId = await JSON.parse(localStorage.recordId)
+            this.$.getPrice.params = {
+              st : this.st
+            }
+            this.$.getPrice.generateRequest()
             this.$.getPaypal.body = {
               bidPriceHistoryUid: this.recordId,
               st: this.st,
@@ -159,6 +173,17 @@
             this.$.getPaypal.generateRequest()
           } else {
             this.dispatchEvent(new CustomEvent('toast', {detail:{msg:"无法获取token"},bubbles: true, composed: true}));
+          }
+        }
+      }
+      responsePrice (e) {
+        let data = e.detail.response
+        if (!data) return
+        for (let item of data) {
+          if (item.paymentId == '1') {
+            this.payAliPrice = item.paymentAmount
+          } else if (item.paymentId == '2') {
+            this.payPalPrice = item.paymentAmount
           }
         }
       }
